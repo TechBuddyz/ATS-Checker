@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Score Checker - AI Powered</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f1419;
+            min-height: 100vh;
+            padding: 48px 24px;
+            color: #1a1a1a;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #f5f5f5;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.9375rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        .main-card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+            padding: 40px;
+            margin-bottom: 24px;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .upload-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 28px;
+            text-align: center;
+            transition: border-color 0.2s, background 0.2s;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .upload-box:hover {
+            border-color: #c4b5fd;
+            background: #faf5ff;
+        }
+
+        .upload-box h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            letter-spacing: 0.01em;
+        }
+
+        .upload-box input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: #1f2937;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #374151;
+        }
+
+        .file-info {
+            margin-top: 12px;
+            color: #6b7280;
+            font-size: 0.8125rem;
+        }
+
+        .textarea-box {
+            width: 100%;
+        }
+
+        .textarea-box textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 12px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            resize: vertical;
+            color: #374151;
+        }
+
+        .textarea-box textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
+        }
+
+        .textarea-box textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px 32px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-bottom: 32px;
+        }
+
+        .score-number {
+            font-size: 4rem;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.03em;
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .industry-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+
+        .score-status {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.8125rem;
+            margin-top: 12px;
+        }
+
+        .score-status.excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .score-status.good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .score-status.fair {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .score-status.poor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .analysis-section {
+            margin-bottom: 32px;
+        }
+
+        .analysis-section h2 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            letter-spacing: 0.01em;
+        }
+
+        .metric-card {
+            background: #f9fafb;
+            padding: 18px 20px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .metric-title {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .metric-score {
+            font-weight: 600;
+            font-size: 0.9375rem;
+        }
+
+        .metric-score.high {
+            color: #059669;
+        }
+
+        .metric-score.medium {
+            color: #d97706;
+        }
+
+        .metric-score.low {
+            color: #dc2626;
+        }
+
+        .metric-details {
+            color: #6b7280;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+        }
+
+        .metric-tip {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #f0f4f8;
+            border-left: 3px solid #64748b;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.8rem;
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+
+        .suggestions-list {
+            list-style: none;
+        }
+
+        .suggestion-item {
+            background: #fafafa;
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #8b5cf6;
+        }
+
+        .suggestion-item.critical {
+            border-left-color: #dc2626;
+        }
+
+        .suggestion-item.important {
+            border-left-color: #d97706;
+        }
+
+        .suggestion-item strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .keywords-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .keyword-tag {
+            background: #1f2937;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.8125rem;
+        }
+
+        .keyword-tag.missing {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .keyword-tag.found {
+            background: #f0fdf4;
+            color: #065f46;
+            border: 1px solid #bbf7d0;
+        }
+
+        .bullet-point-card {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+
+        .bullet-point-card:hover {
+            border-color: #c4b5fd;
+        }
+
+        .bullet-point-text {
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: #374151;
+            padding-right: 80px;
+        }
+
+        .bullet-target {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1f2937;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #374151;
+        }
+
+        .copy-btn.copied {
+            background: #059669;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 48px 24px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #6b7280;
+            font-size: 0.9375rem;
+        }
+
+        .loading-subtext {
+            color: #9ca3af;
+            font-size: 0.8125rem;
+            margin-top: 8px;
+        }
+
+        .info-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-left: 3px solid #6b7280;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            border-radius: 4px;
+            font-size: 0.8125rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .info-box.success {
+            border-left-color: #059669;
+            background: #f0fdf4;
+        }
+
+        .style-analysis {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            padding: 14px 18px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 0.8125rem;
+        }
+
+        .style-analysis h4 {
+            color: #0369a1;
+            font-size: 0.8125rem;
+            margin-bottom: 8px;
+        }
+
+        .style-analysis p {
+            color: #0c4a6e;
+            margin: 4px 0;
+        }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 3px solid #dc2626;
+            padding: 14px 18px;
+            border-radius: 4px;
+            color: #991b1b;
+            font-size: 0.875rem;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-card {
+                padding: 24px;
+            }
+
+            .score-number {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ATS Score Checker</h1>
+            <p>AI-powered resume analysis for any industry</p>
+            <span class="badge">Powered by AI</span>
+        </div>
+
+        <div class="main-card">
+            <div class="info-box">
+                Dynamic analysis using AI - works for any job type: Tech, Marketing, Healthcare, Finance, Legal, HR, and more. Uses strict matching like real ATS systems (Workday, Taleo, iCIMS). <strong>Tip:</strong> Use EXACT keywords from the job description in your resume.
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-box" onclick="document.getElementById('resumeFile').click()">
+                    <h3>Resume</h3>
+                    <p style="color: #6b7280; margin-bottom: 12px; font-size: 0.8125rem;">PDF or DOCX</p>
+                    <input type="file" id="resumeFile" accept=".pdf,.docx">
+                    <button class="upload-btn" type="button">Choose File</button>
+                    <div class="file-info" id="resumeFileName">No file selected</div>
+                </div>
+
+                <div class="upload-box">
+                    <h3>Job Description</h3>
+                    <div class="textarea-box">
+                        <textarea id="jobDescription" placeholder="Paste the complete job description here (any industry, any role)."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button class="analyze-btn" id="analyzeBtn" disabled>Analyze with AI</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">Analyzing with AI...</p>
+                <p class="loading-subtext">Extracting keywords, matching skills, generating suggestions</p>
+            </div>
+
+            <div id="errorContainer"></div>
+
+            <div class="results" id="results">
+                <div class="score-display">
+                    <div class="score-number" id="scoreNumber">0</div>
+                    <div class="score-label">ATS Match Score</div>
+                    <div id="industryBadge"></div>
+                    <div class="score-status" id="scoreStatus">Analyzing...</div>
+                </div>
+
+                <div class="analysis-section">
+                    <h2>Scoring Breakdown</h2>
+                    <div id="metricsContainer"></div>
+                </div>
+
+                <div class="analysis-section">
+                    <h2>Recommendations</h2>
+                    <ul class="suggestions-list" id="suggestionsList"></ul>
+                </div>
+
+                <div class="analysis-section">
+                    <h2>Keyword Analysis</h2>
+                    <p style="color: #6b7280; margin-bottom: 12px; font-size: 0.8125rem;">Real ATS systems use strict matching. Add missing keywords using the EXACT phrases shown below.</p>
+                    <div id="keywordAnalysis"></div>
+                </div>
+
+                <div class="analysis-section">
+                    <h2>Suggested Improvements</h2>
+                    <p style="color: #6b7280; margin-bottom: 12px; font-size: 0.8125rem;">AI-generated bullet points that match your resume's writing style and include missing keywords.</p>
+                    <div id="bulletPoints"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Replace with your Google Apps Script URL after deployment
+        // To use local backend, set to 'http://localhost:3000'
+        // To use Apps Script, set to your deployed Apps Script URL
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyM-VDfFJ5AzJFvVXVeT9xqTIInv9piDbPrGxrWOwUXShQQiRuZGbvcC9NWyVoCPygtQg/exec';
+
+        // PDF.js configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let resumeText = '';
+        let jobDescriptionText = '';
+
+        // File upload handling
+        document.getElementById('resumeFile').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('resumeFileName').textContent = file.name;
+                resumeText = await extractTextFromFile(file);
+                checkIfReadyToAnalyze();
+            }
+        });
+
+        document.getElementById('jobDescription').addEventListener('input', function(e) {
+            jobDescriptionText = e.target.value;
+            checkIfReadyToAnalyze();
+        });
+
+        function checkIfReadyToAnalyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = !(resumeText && jobDescriptionText.trim());
+        }
+
+        async function extractTextFromFile(file) {
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.pdf')) {
+                return await extractTextFromPDF(file);
+            } else if (fileName.endsWith('.docx')) {
+                return await extractTextFromDOCX(file);
+            }
+            
+            return '';
+        }
+
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let text = '';
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => item.str).join(' ');
+                text += pageText + '\n';
+            }
+            
+            return text;
+        }
+
+        async function extractTextFromDOCX(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            return result.value;
+        }
+
+        // Analysis logic
+        document.getElementById('analyzeBtn').addEventListener('click', function() {
+            analyzeResume();
+        });
+
+        async function analyzeResume() {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('errorContainer').innerHTML = '';
+
+            try {
+                // Determine the correct endpoint based on whether it's Apps Script or local backend
+                const isAppsScript = API_BASE_URL.includes('script.google.com');
+                const endpoint = isAppsScript ? API_BASE_URL : `${API_BASE_URL}/api/analyze`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        resume: resumeText,
+                        jobDescription: jobDescriptionText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.analysis, data.suggestions);
+                } else {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                const isAppsScript = API_BASE_URL.includes('script.google.com');
+                const helpText = isAppsScript 
+                    ? 'Make sure your Apps Script is deployed and the URL is correct'
+                    : `Make sure the backend server is running on ${API_BASE_URL}`;
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error-box">
+                        <strong>Analysis Failed:</strong> ${error.message}<br>
+                        <span style="font-size: 0.8rem;">${helpText}</span>
+                    </div>
+                `;
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function displayResults(analysis, suggestions) {
+            document.getElementById('results').classList.add('show');
+            
+            // Display score
+            const score = analysis.overallScore || 0;
+            document.getElementById('scoreNumber').textContent = score;
+            
+            // Display industry
+            if (analysis.industryDetected) {
+                document.getElementById('industryBadge').innerHTML = `
+                    <span class="industry-badge">${analysis.industryDetected}</span>
+                `;
+            }
+            
+            // Score status
+            const statusEl = document.getElementById('scoreStatus');
+            if (score >= 80) {
+                statusEl.textContent = 'Strong Match - Likely to Pass';
+                statusEl.className = 'score-status excellent';
+            } else if (score >= 60) {
+                statusEl.textContent = 'Moderate Match - May Pass';
+                statusEl.className = 'score-status good';
+            } else if (score >= 40) {
+                statusEl.textContent = 'Weak Match - Needs Work';
+                statusEl.className = 'score-status fair';
+            } else {
+                statusEl.textContent = 'Low Match - Likely Filtered';
+                statusEl.className = 'score-status poor';
+            }
+
+            // Display metrics
+            const metricsContainer = document.getElementById('metricsContainer');
+            let metricsHTML = '';
+            
+            // Knockout filters
+            if (analysis.knockoutFilters) {
+                const kf = analysis.knockoutFilters;
+                const hasIssues = (kf.failed?.length > 0) || (kf.warnings?.length > 0);
+                const knockoutScore = hasIssues ? (kf.failed?.length > 0 ? 0 : 50) : 100;
+                let knockoutDetails = `${kf.passed?.length || 0} passed, ${kf.warnings?.length || 0} warnings, ${kf.failed?.length || 0} failed`;
+                
+                // Add details about failed/warning filters
+                if (kf.failed?.length > 0) {
+                    knockoutDetails += '<br><strong style="color:#dc2626">Failed:</strong> ' + kf.failed.map(f => f.filter).join(', ');
+                }
+                if (kf.warnings?.length > 0) {
+                    knockoutDetails += '<br><strong style="color:#d97706">Warnings:</strong> ' + kf.warnings.map(w => w.filter).join(', ');
+                }
+                
+                const knockoutReason = kf.failed?.length > 0 
+                    ? '<strong>Why 0%:</strong> Failed knockout filters result in automatic rejection by ATS systems, regardless of other qualifications.'
+                    : kf.warnings?.length > 0 
+                    ? '<strong>Why 50%:</strong> Warnings indicate preferred qualifications that are missing but not mandatory.'
+                    : '<strong>Why 100%:</strong> All mandatory requirements (experience, degree, certifications) are met.';
+                
+                metricsHTML += createMetricCard('Knockout Filters', knockoutScore, knockoutDetails, knockoutReason);
+            }
+            
+            // Keywords
+            if (analysis.keywords) {
+                const matched = analysis.keywords.matched?.length || 0;
+                const total = analysis.keywords.extracted?.length || 0;
+                const kwScore = analysis.keywords.score || 0;
+                const kwReason = `<strong>Why ${kwScore}%:</strong> ${matched} out of ${total} job description keywords found in your resume. Score = (matched/total) × 100.`;
+                metricsHTML += createMetricCard(
+                    'Keyword Match (35% weight)',
+                    kwScore,
+                    `${matched} of ${total} keywords found`,
+                    kwReason
+                );
+            }
+            
+            // Skills
+            if (analysis.skills) {
+                const matched = analysis.skills.matched?.length || 0;
+                const total = analysis.skills.required?.length || 0;
+                const skillScore = analysis.skills.score || 0;
+                const skillsReason = `<strong>Why ${skillScore}%:</strong> ${matched} out of ${total} required skills found in your resume. Score = (matched/total) × 100.`;
+                metricsHTML += createMetricCard(
+                    'Skills Match (10% weight)',
+                    skillScore,
+                    `${matched} of ${total} skills found`,
+                    skillsReason
+                );
+            }
+            
+            // Experience
+            if (analysis.experience) {
+                const detected = analysis.experience.detectedYears || 0;
+                const required = analysis.experience.requiredYears;
+                const expScore = analysis.experience.score || 0;
+                let expReason = `<strong>Why ${expScore}%:</strong> `;
+                if (required) {
+                    if (detected >= required) {
+                        expReason += `You have ${detected} years, meeting the ${required}+ years requirement.`;
+                    } else {
+                        expReason += `You have ${detected} years but ${required}+ years are required. Score reduced proportionally.`;
+                    }
+                } else {
+                    expReason += `${detected} years of experience detected. No specific requirement stated in JD.`;
+                }
+                metricsHTML += createMetricCard(
+                    'Experience (25% weight)',
+                    expScore,
+                    `${detected} years detected${required ? ` (${required}+ required)` : ''}`,
+                    expReason
+                );
+            }
+            
+            // Education
+            if (analysis.education) {
+                const eduScore = analysis.education.score || 0;
+                const found = analysis.education.found;
+                const required = analysis.education.required;
+                let eduReason = `<strong>Why ${eduScore}%:</strong> `;
+                if (analysis.education.matched) {
+                    eduReason += found ? `"${found}" meets the education requirement.` : 'Education requirement met.';
+                } else if (required) {
+                    eduReason += `Job requires "${required}" but found "${found || 'none'}".`;
+                } else {
+                    eduReason += found ? `"${found}" detected. No specific degree required.` : 'No education detected in resume.';
+                }
+                metricsHTML += createMetricCard(
+                    'Education (20% weight)',
+                    eduScore,
+                    found || 'Not detected',
+                    eduReason
+                );
+            }
+            
+            // Job Title
+            if (analysis.jobTitle) {
+                const titleScore = analysis.jobTitle.score || 0;
+                const matchType = analysis.jobTitle.matchType || 'none';
+                const target = analysis.jobTitle.targetTitle || 'N/A';
+                let titleReason = `<strong>Why ${titleScore}%:</strong> `;
+                if (matchType === 'exact') {
+                    titleReason += `Your resume titles exactly match "${target}".`;
+                } else if (matchType === 'partial') {
+                    titleReason += `Your resume titles partially match "${target}" (similar role/level).`;
+                } else {
+                    titleReason += `No title match found for "${target}" in your resume.`;
+                }
+                metricsHTML += createMetricCard(
+                    'Job Title Alignment (10% weight)',
+                    titleScore,
+                    `${matchType} match for "${target}"`,
+                    titleReason
+                );
+            }
+            
+            metricsContainer.innerHTML = metricsHTML;
+
+            // Display recommendations
+            const suggestionsList = document.getElementById('suggestionsList');
+            if (analysis.recommendations && analysis.recommendations.length > 0) {
+                suggestionsList.innerHTML = analysis.recommendations.map(r => `
+                    <li class="suggestion-item ${r.type}">
+                        <strong>${r.type === 'critical' ? 'Critical:' : r.type === 'important' ? 'Important:' : 'Tip:'}</strong> ${r.text}
+                    </li>
+                `).join('');
+            } else {
+                suggestionsList.innerHTML = '<li class="suggestion-item">No specific recommendations at this time.</li>';
+            }
+
+            // Display keyword analysis
+            const keywordAnalysis = document.getElementById('keywordAnalysis');
+            const matchedKw = analysis.keywords?.matched || [];
+            const missingKw = analysis.keywords?.missing || [];
+            
+            keywordAnalysis.innerHTML = `
+                <h3 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Found in resume (${matchedKw.length})</h3>
+                <div class="keywords-grid">
+                    ${matchedKw.slice(0, 20).map(kw => `<div class="keyword-tag found">${kw}</div>`).join('')}
+                </div>
+                <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Missing (${missingKw.length})</h3>
+                <div class="keywords-grid">
+                    ${missingKw.slice(0, 20).map(kw => `<div class="keyword-tag missing">${kw}</div>`).join('')}
+                </div>
+            `;
+
+            // Display bullet point suggestions
+            const bulletPointsContainer = document.getElementById('bulletPoints');
+            
+            if (suggestions && suggestions.bulletPoints && suggestions.bulletPoints.length > 0) {
+                // Show style analysis if available
+                let styleHTML = '';
+                if (suggestions.styleAnalysis) {
+                    const sa = suggestions.styleAnalysis;
+                    styleHTML = `
+                        <div class="style-analysis">
+                            <h4>Your Resume's Writing Style</h4>
+                            <p><strong>Action verbs you use:</strong> ${sa.actionVerbs?.slice(0, 5).join(', ') || 'N/A'}</p>
+                            <p><strong>Uses metrics:</strong> ${sa.usesMetrics ? 'Yes' : 'No'}</p>
+                            <p><strong>Length:</strong> ${sa.avgLength || 'medium'}</p>
+                            <p><strong>Tone:</strong> ${sa.tone || 'professional'}</p>
+                        </div>
+                    `;
+                }
+                
+                // Summary
+                const allKeywords = suggestions.bulletPoints.flatMap(b => b.keywords || []);
+                const uniqueKeywords = [...new Set(allKeywords)];
+                
+                bulletPointsContainer.innerHTML = styleHTML + `
+                    <div class="info-box success" style="margin-bottom: 16px;">
+                        <strong>${suggestions.bulletPoints.length} suggestions</strong> covering ${uniqueKeywords.length} missing keywords.
+                        ${suggestions.keywordsNotCovered?.length > 0 ? `<br><span style="color: #92400e;">Not covered: ${suggestions.keywordsNotCovered.join(', ')}</span>` : ''}
+                    </div>
+                ` + suggestions.bulletPoints.map((bullet, index) => {
+                    const cleanText = bullet.text;
+                    const keywordsUsed = bullet.keywords?.join(', ') || '';
+                    const targetSection = bullet.targetSection || 'Experience';
+                    
+                    return `
+                        <div class="bullet-point-card" id="bullet-${index}">
+                            <div class="bullet-point-text">
+                                ${cleanText}
+                                <div style="margin-top: 8px;">
+                                    ${keywordsUsed ? `<span style="font-size: 0.75rem; color: #059669; font-weight: 500;">Keywords: ${keywordsUsed}</span>` : ''}
+                                    <span class="bullet-target">${targetSection}</span>
+                                </div>
+                            </div>
+                            <button class="copy-btn" onclick="copyBulletPoint(${index}, \`${cleanText.replace(/`/g, '\\`').replace(/"/g, '&quot;')}\`)">
+                                Copy
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                bulletPointsContainer.innerHTML = `
+                    <div class="info-box success">
+                        Your resume already covers the key requirements! No additional bullet points needed.
+                    </div>
+                `;
+            }
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function createMetricCard(title, score, details, reason) {
+            const scoreClass = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
+            const reasonHTML = reason ? `<div class="metric-tip">${reason}</div>` : '';
+            return `
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-title">${title}</div>
+                        <div class="metric-score ${scoreClass}">${score}%</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${score}%"></div>
+                    </div>
+                    <div class="metric-details">${details}</div>
+                    ${reasonHTML}
+                </div>
+            `;
+        }
+
+        function copyBulletPoint(index, text) {
+            const cleanText = '• ' + text;
+            
+            navigator.clipboard.writeText(cleanText).then(() => {
+                const btn = document.querySelector(`#bullet-${index} .copy-btn`);
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Copy failed. Please select and copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
