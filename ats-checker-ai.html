@@ -551,7 +551,7 @@
 
         <div class="main-card">
             <div class="info-box">
-                Dynamic analysis using AI <strong>Tip:</strong> Use EXACT keywords from the job description in your resume.
+                Dynamic analysis using AI - works for any job type: Tech, Marketing, Healthcare, Finance, Legal, HR, and more. Uses strict matching like real ATS systems (Workday, Taleo, iCIMS). <strong>Tip:</strong> Use EXACT keywords from the job description in your resume.
             </div>
 
             <div class="upload-section">
@@ -694,22 +694,49 @@
                 const isAppsScript = API_BASE_URL.includes('script.google.com');
                 const endpoint = isAppsScript ? API_BASE_URL : `${API_BASE_URL}/api/analyze`;
                 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        resume: resumeText,
-                        jobDescription: jobDescriptionText
-                    })
-                });
+                let data;
+                
+                if (isAppsScript) {
+                    // Apps Script requires special handling due to redirects
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        mode: 'cors',
+                        credentials: 'omit',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: JSON.stringify({
+                            resume: resumeText,
+                            jobDescription: jobDescriptionText
+                        }),
+                        redirect: 'follow'
+                    });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Server error: ${response.status} - ${errorText}`);
+                    }
+                    
+                    data = await response.json();
+                } else {
+                    // Local backend
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            resume: resumeText,
+                            jobDescription: jobDescriptionText
+                        })
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`Server error: ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+
+                    data = await response.json();
                 }
-
-                const data = await response.json();
 
                 if (data.success) {
                     displayResults(data.analysis, data.suggestions);
