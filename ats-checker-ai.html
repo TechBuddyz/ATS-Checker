@@ -618,7 +618,7 @@
         // Configuration - Replace with your Google Apps Script URL after deployment
         // To use local backend, set to 'http://localhost:3000'
         // To use Apps Script, set to your deployed Apps Script URL
-        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwnvJGfXA-Yzj_IZxvTLGQO73HaroeveJo4Fcvh6AZP-cNXbaPoaJpZ7GRCXxDcWZPdtA/exec';
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwnvJGfXA-Yzj_IZxvTLGQ073HaroeveJo4Fcvh6AZP-cNXbaPoaJpZ7GRCXxDcWZPdtA/exec';
 
         // PDF.js configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -697,27 +697,23 @@
                 let data;
                 
                 if (isAppsScript) {
-                    // Apps Script requires special handling due to redirects
+                    // Apps Script requires special handling - no custom headers to avoid preflight
                     const response = await fetch(endpoint, {
                         method: 'POST',
-                        mode: 'cors',
-                        credentials: 'omit',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        },
                         body: JSON.stringify({
                             resume: resumeText,
                             jobDescription: jobDescriptionText
-                        }),
-                        redirect: 'follow'
+                        })
                     });
                     
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Server error: ${response.status} - ${errorText}`);
-                    }
+                    const responseText = await response.text();
                     
-                    data = await response.json();
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch (e) {
+                        console.error('Response:', responseText);
+                        throw new Error('Invalid response from server. Check browser console for details.');
+                    }
                 } else {
                     // Local backend
                     const response = await fetch(endpoint, {
