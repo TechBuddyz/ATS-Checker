@@ -618,7 +618,7 @@
         // Configuration - Replace with your Google Apps Script URL after deployment
         // To use local backend, set to 'http://localhost:3000'
         // To use Apps Script, set to your deployed Apps Script URL
-        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycby8CeicSirduH1bbQviPJ4AXnPBqJHSG9YQoKkWj9SH9F4f5b93aXwQiLd8sPRuoP35Qw/exec';
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwzyadhTFbNakL-vVgq2MON6Z1ZG9kBPO5gUfQ6i3tlskhG79jT_AfIzFx1t5qIIBld0w/exec';
 
         // PDF.js configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -926,17 +926,31 @@
             const keywordAnalysis = document.getElementById('keywordAnalysis');
             const matchedKw = analysis.keywords?.matched || [];
             const missingKw = analysis.keywords?.missing || [];
+            const needsRephrasing = analysis.keywords?.needsRephrasing || [];
             
-            keywordAnalysis.innerHTML = `
+            let keywordHTML = `
                 <h3 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Found in resume (${matchedKw.length})</h3>
                 <div class="keywords-grid">
                     ${matchedKw.slice(0, 20).map(kw => `<div class="keyword-tag found">${kw}</div>`).join('')}
-                </div>
+                </div>`;
+            
+            if (needsRephrasing.length > 0) {
+                keywordHTML += `
+                <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Needs Rephrasing (${needsRephrasing.length})</h3>
+                <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 8px;">You have the skill but should use the exact JD terminology</p>
+                <div class="keywords-grid">
+                    ${needsRephrasing.map(kw => `<div class="keyword-tag" style="background: #fef3c7; color: #92400e; border-color: #fcd34d;">${kw}</div>`).join('')}
+                </div>`;
+            }
+            
+            keywordHTML += `
                 <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Missing (${missingKw.length})</h3>
                 <div class="keywords-grid">
-                    ${missingKw.slice(0, 20).map(kw => `<div class="keyword-tag missing">${kw}</div>`).join('')}
+                    ${missingKw.length > 0 ? missingKw.slice(0, 20).map(kw => `<div class="keyword-tag missing">${kw}</div>`).join('') : '<span style="color: #059669;">No missing keywords!</span>'}
                 </div>
             `;
+            
+            keywordAnalysis.innerHTML = keywordHTML;
 
             // Display bullet point suggestions
             const bulletPointsContainer = document.getElementById('bulletPoints');
@@ -961,9 +975,33 @@
                 const allKeywords = suggestions.bulletPoints.flatMap(b => b.keywords || []);
                 const uniqueKeywords = [...new Set(allKeywords)];
                 
-                bulletPointsContainer.innerHTML = styleHTML + `
+                // Show rephrase suggestions first
+                let rephraseHTML = '';
+                if (suggestions.rephraseSuggestions && suggestions.rephraseSuggestions.length > 0) {
+                    rephraseHTML = `
+                        <h4 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #92400e;">Rephrase Existing Content (${suggestions.rephraseSuggestions.length})</h4>
+                        <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 12px;">Update these phrases in your resume to match the JD terminology:</p>
+                        ${suggestions.rephraseSuggestions.map((r, i) => `
+                            <div class="bullet-point-card" style="border-left: 3px solid #f59e0b;">
+                                <div class="bullet-point-text">
+                                    <div style="margin-bottom: 8px;">
+                                        <span style="color: #dc2626; text-decoration: line-through;">${r.currentText || 'Current phrasing'}</span>
+                                    </div>
+                                    <div style="color: #059669; font-weight: 500;">${r.suggestedText}</div>
+                                    <div style="margin-top: 8px;">
+                                        <span style="font-size: 0.75rem; color: #92400e;">Add keyword: ${r.keyword}</span>
+                                    </div>
+                                </div>
+                                <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${(r.suggestedText || '').replace(/`/g, '').replace(/"/g, '&quot;')}\`)">Copy</button>
+                            </div>
+                        `).join('')}
+                        <h4 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">New Bullet Points to Add (${suggestions.bulletPoints.length})</h4>
+                    `;
+                }
+                
+                bulletPointsContainer.innerHTML = styleHTML + rephraseHTML + `
                     <div class="info-box success" style="margin-bottom: 16px;">
-                        <strong>${suggestions.bulletPoints.length} suggestions</strong> covering ${uniqueKeywords.length} missing keywords.
+                        <strong>${suggestions.bulletPoints.length} new bullet${suggestions.bulletPoints.length !== 1 ? 's' : ''}</strong> for missing experience.
                         ${suggestions.keywordsNotCovered?.length > 0 ? `<br><span style="color: #92400e;">Not covered: ${suggestions.keywordsNotCovered.join(', ')}</span>` : ''}
                     </div>
                 ` + suggestions.bulletPoints.map((bullet, index) => {
@@ -986,10 +1024,33 @@
                         </div>
                     `;
                 }).join('');
+            } else if (suggestions && suggestions.rephraseSuggestions && suggestions.rephraseSuggestions.length > 0) {
+                // Only rephrase suggestions, no new bullets needed
+                bulletPointsContainer.innerHTML = `
+                    <h4 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #92400e;">Rephrase Existing Content</h4>
+                    <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 12px;">Update these phrases to match JD terminology:</p>
+                    ${suggestions.rephraseSuggestions.map((r, i) => `
+                        <div class="bullet-point-card" style="border-left: 3px solid #f59e0b;">
+                            <div class="bullet-point-text">
+                                <div style="margin-bottom: 8px;">
+                                    <span style="color: #dc2626; text-decoration: line-through;">${r.currentText || 'Current phrasing'}</span>
+                                </div>
+                                <div style="color: #059669; font-weight: 500;">${r.suggestedText}</div>
+                                <div style="margin-top: 8px;">
+                                    <span style="font-size: 0.75rem; color: #92400e;">Add keyword: ${r.keyword}</span>
+                                </div>
+                            </div>
+                            <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${(r.suggestedText || '').replace(/`/g, '').replace(/"/g, '&quot;')}\`)">Copy</button>
+                        </div>
+                    `).join('')}
+                    <div class="info-box success" style="margin-top: 16px;">
+                        No new bullet points needed - just rephrase existing content!
+                    </div>
+                `;
             } else {
                 bulletPointsContainer.innerHTML = `
                     <div class="info-box success">
-                        Your resume already covers the key requirements! No additional bullet points needed.
+                        Your resume already covers the key requirements! No changes needed.
                     </div>
                 `;
             }
