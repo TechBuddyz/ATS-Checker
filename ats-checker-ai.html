@@ -525,42 +525,53 @@ RULES:
                 if (!phrase) return false;
                 const p = phrase.toLowerCase().trim();
                 
-                // For multi-word phrases or hyphenated terms, require exact substring match
-                if (p.includes(' ') || p.includes('-')) {
-                    if (text.includes(p)) return true;
+                // Simple substring check - this is case-insensitive because text and p are lowercased
+                if (text.includes(p)) return true;
+                
+                // For hyphenated terms, also check with spaces instead of hyphens
+                // e.g., "scikit-learn" might be written as "scikit learn"
+                if (p.includes('-')) {
+                    const withSpaces = p.replace(/-/g, ' ');
+                    if (text.includes(withSpaces)) return true;
                     
-                    // For hyphenated terms, also check with spaces instead of hyphens
-                    // e.g., "scikit-learn" might be written as "Scikit learn" or "scikit learn"
-                    if (p.includes('-')) {
-                        const withSpaces = p.replace(/-/g, ' ');
-                        if (text.includes(withSpaces)) return true;
-                    }
-                    
+                    // Also try without hyphens entirely (e.g., "scikitlearn")
+                    const withoutHyphens = p.replace(/-/g, '');
+                    if (text.includes(withoutHyphens)) return true;
+                }
+                
+                // For multi-word phrases with spaces, we already checked exact match above
+                if (p.includes(' ')) {
                     return false;
                 }
                 
                 // For single words (no spaces or hyphens), use word boundary matching
-                // \b matches word boundaries (spaces, punctuation, start/end of string)
-                const exactMatch = new RegExp('\\b' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-                if (exactMatch.test(text)) return true;
-                
-                // Check plural/singular variations with word boundaries
-                if (p.endsWith('s')) {
-                    const singular = p.slice(0, -1);
-                    const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-                    if (singularMatch.test(text)) return true;
-                }
-                
-                if (!p.endsWith('s')) {
-                    const plural = p + 's';
-                    const pluralMatch = new RegExp('\\b' + plural.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-                    if (pluralMatch.test(text)) return true;
-                }
-                
-                if (p.endsWith('es')) {
-                    const singular = p.slice(0, -2);
-                    const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
-                    if (singularMatch.test(text)) return true;
+                // This prevents "test" from matching "testing" 
+                try {
+                    const exactMatch = new RegExp('\\b' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                    if (exactMatch.test(text)) return true;
+                    
+                    // Check plural/singular variations with word boundaries
+                    if (p.endsWith('s') && p.length > 2) {
+                        const singular = p.slice(0, -1);
+                        const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                        if (singularMatch.test(text)) return true;
+                    }
+                    
+                    if (!p.endsWith('s')) {
+                        const plural = p + 's';
+                        const pluralMatch = new RegExp('\\b' + plural.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                        if (pluralMatch.test(text)) return true;
+                    }
+                    
+                    if (p.endsWith('es') && p.length > 3) {
+                        const singular = p.slice(0, -2);
+                        const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                        if (singularMatch.test(text)) return true;
+                    }
+                } catch (e) {
+                    // If regex fails, just return false
+                    console.error('Regex error for phrase:', p, e);
+                    return false;
                 }
                 
                 return false;
@@ -591,6 +602,10 @@ RULES:
             }
 
             if (analysis.keywords) {
+                console.log('AI extracted keywords:', analysis.keywords.extracted?.length || 0);
+                console.log('AI matched keywords:', analysis.keywords.matched?.length || 0);
+                console.log('AI missing keywords:', analysis.keywords.missing?.length || 0);
+                
                 // 1. Normalize needsRephrasing
                 let rephrase = (analysis.keywords.needsRephrasing || [])
                     .map(item => {
@@ -629,11 +644,13 @@ RULES:
                     if (matchedSet.has(lower)) continue;
                     
                     // Verify it's actually in the resume
-                    if (appearsIn(resumeLower, m)) {
+                    const foundInResume = appearsIn(resumeLower, m);
+                    if (foundInResume) {
                         tempMatched.push(m);
                         matchedSet.add(lower);
                     } else {
                         // AI said it's matched, but it's not in resume - move to missing
+                        console.log('Keyword marked as matched by AI but not found in resume:', m);
                         tempMissing.push(m);
                     }
                 }
@@ -663,6 +680,10 @@ RULES:
                 analysis.keywords.matched = matched;
                 analysis.keywords.missing = verifiedMissing;
                 analysis.keywords.needsRephrasing = rephrase;
+                
+                console.log('After verification - matched:', matched.length, 'missing:', verifiedMissing.length);
+                console.log('Sample matched keywords:', matched.slice(0, 5));
+                console.log('Sample missing keywords:', verifiedMissing.slice(0, 5));
                 
                 // Use extracted.length as the total (not matched + missing)
                 const total = analysis.keywords.extracted.length;
@@ -841,14 +862,34 @@ RULES:
                     (b.keywords || []).forEach(kw => covered.add(kw.toLowerCase()));
                 });
 
+                // Generate varied fallback bullets for uncovered keywords
+                const actionVerbs = ['Implemented', 'Developed', 'Utilized', 'Leveraged', 'Built', 'Integrated', 'Designed', 'Deployed'];
+                const contexts = [
+                    'to enhance system performance and scalability',
+                    'to optimize data processing workflows',
+                    'for production-grade ML model deployment',
+                    'to improve model accuracy and reliability',
+                    'across distributed computing environments',
+                    'to streamline development and deployment pipelines'
+                ];
+                
+                let verbIndex = 0;
+                let contextIndex = 0;
+                
                 missingKeywords.forEach(kw => {
                     if (!covered.has(kw.toLowerCase())) {
-                        // Generate a simple fallback bullet for uncovered keywords
+                        // Vary the action verbs and contexts
+                        const verb = actionVerbs[verbIndex % actionVerbs.length];
+                        const context = contexts[contextIndex % contexts.length];
+                        
                         suggestions.bulletPoints.push({
-                            text: "Applied " + kw + " expertise to deliver measurable improvements in system performance and reliability",
+                            text: verb + " " + kw + " " + context,
                             keywords: [kw],
                             targetSection: "Experience"
                         });
+                        
+                        verbIndex++;
+                        contextIndex++;
                     }
                 });
             }
