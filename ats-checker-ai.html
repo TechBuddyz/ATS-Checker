@@ -538,6 +538,15 @@ RULES:
                 // Simple substring check - this is case-insensitive because text and p are lowercased
                 if (text.includes(p)) return true;
                 
+                // Debug: Log why certain keywords might not be matching
+                if (p === 'scikit-learn' || p === 'tf-idf') {
+                    console.log('DEBUG:', p, '-> checking in text, substring found:', text.includes(p));
+                    const index = text.indexOf('scikit');
+                    if (index >= 0) {
+                        console.log('Found "scikit" at index', index, ', nearby text:', text.substring(index, index + 30));
+                    }
+                }
+                
                 // For hyphenated terms, also check with spaces instead of hyphens
                 // e.g., "scikit-learn" might be written as "scikit learn"
                 if (p.includes('-')) {
@@ -656,6 +665,7 @@ RULES:
                     
                     // Verify it's actually in the resume
                     const foundInResume = appearsIn(resumeLower, m);
+                    console.log('Checking matched keyword:', m, '-> Found:', foundInResume);
                     if (foundInResume) {
                         tempMatched.push(m);
                         matchedSet.add(lower);
@@ -671,9 +681,13 @@ RULES:
 
                 // Now process the missing list from AI
                 for (const keyword of missing) {
-                    if (appearsIn(resumeLower, keyword)) {
+                    const foundInResume = appearsIn(resumeLower, keyword);
+                    console.log('Checking missing keyword:', keyword, '-> Found in resume:', foundInResume);
+                    
+                    if (foundInResume) {
                         const keywordLower = keyword.toLowerCase();
                         if (!matchedSet.has(keywordLower)) {
+                            console.log('Moving from missing to matched:', keyword);
                             matched.push(keyword);
                             matchedSet.add(keywordLower);
                         }
@@ -845,6 +859,8 @@ RULES:
             const rephrase = (analysis.keywords?.needsRephrasing || [])
                 .filter(r => typeof r === 'object' && r.resumeTerm && r.jdTerm);
 
+            console.log('📋 Generating suggestions for missing keywords:', missing);
+
             if (missing.length === 0 && rephrase.length === 0) {
                 return { bulletPoints: [], rephraseSuggestions: [] };
             }
@@ -855,48 +871,51 @@ RULES:
 
             const missingText = missing.length > 0 ? missing.join(', ') : 'None';
 
-            const prompt = `You are an expert resume writer. Compare these two documents and generate suggestions.
-
-JOB DESCRIPTION:
-${jd}
+            const prompt = `You are an expert resume writer. You will generate suggestions for ONLY the specific missing keywords provided below.
 
 RESUME:
 ${resume}
 
+JOB DESCRIPTION (for context):
+${jd}
+
 TERMS TO REPHRASE (resume has synonym, use JD wording):
 ${rephraseText}
 
-MISSING KEYWORDS (in JD, not in resume at all):
+MISSING KEYWORDS (these are the ONLY keywords you should generate bullets for):
 ${missingText}
+
+CRITICAL INSTRUCTIONS:
+1. Generate bullets ONLY for the keywords listed in "MISSING KEYWORDS" above
+2. Do NOT extract new keywords from the JD
+3. Do NOT generate bullets for keywords not in the missing list
+4. Generate EXACTLY ${missing.length} bullet points (one per missing keyword)
 
 TASKS:
 
-1. REPHRASE: For each rephrase pair, find the exact bullet point or phrase in the resume where the resume term appears. Rewrite it to include the JD term.
-   - currentText: copy the exact line from the resume
-   - suggestedText: rewrite that line to include the JD term
+1. REPHRASE: For each rephrase pair above, find the exact phrase in the resume and rewrite it with the JD term.
 
-2. BULLET POINTS: Generate EXACTLY ONE bullet point for EACH of the ${missing.length} missing keywords listed above.
-   You MUST return ${missing.length} bullet points. Each bullet must:
-   - Cover exactly one missing keyword from the list
-   - Match the resume's writing style (action verbs, metrics, tone)
-   - Naturally include the missing keyword in context
-   - Draw from the person's existing experience domain where possible
-   - Sound like a real achievement, not generic
+2. BULLET POINTS: For EACH of the ${missing.length} missing keywords listed above:
+   - Write ONE bullet point that naturally includes that keyword
+   - Match the resume's writing style (look at action verbs, metrics, tone in the resume)
+   - Base it on the person's experience domain (ML/data/cloud based on resume)
+   - Make it specific and achievement-oriented
 
-Return JSON:
+Return JSON with EXACTLY ${missing.length} bullet points:
 {
   "rephraseSuggestions": [
-    {"currentText": "exact line from resume", "suggestedText": "rewritten line with JD term", "keyword": "JD term", "resumeTerm": "resume word", "jdTerm": "JD word"}
+    {"currentText": "exact line from resume", "suggestedText": "rewritten version", "keyword": "keyword", "resumeTerm": "resume term", "jdTerm": "JD term"}
   ],
   "bulletPoints": [
-    {"text": "full bullet point", "keywords": ["missing keyword covered"], "targetSection": "Experience"}
+    {"text": "full bullet point", "keywords": ["missing keyword it covers"], "targetSection": "Experience"}
   ]
 }
 
 RULES:
-- currentText must be copied from the actual resume text
-- bulletPoints MUST cover ALL missing keywords - generate ${missing.length} bullets
-- Each bullet's keywords must be from the MISSING list only
+- Generate bullets ONLY for keywords in the MISSING KEYWORDS list above
+- Return EXACTLY ${missing.length} bullet points
+- Each bullet must contain at least one keyword from the missing list
+- Do NOT generate bullets for keywords not provided
 - Return ONLY valid JSON`;
 
             try {
@@ -924,6 +943,8 @@ RULES:
 
             // Keep all bullet points that have text; tag with keywords found in text
             if (Array.isArray(suggestions.bulletPoints)) {
+                const missingSet = new Set(missingKeywords.map(k => k.toLowerCase()));
+                
                 suggestions.bulletPoints = suggestions.bulletPoints
                     .filter(b => b && b.text && b.text.length > 10)
                     .map(bullet => {
@@ -935,6 +956,15 @@ RULES:
                         );
                         bullet.keywords = foundKeywords.length > 0 ? foundKeywords : (bullet.keywords || []);
                         return bullet;
+                    })
+                    .filter(bullet => {
+                        // CRITICAL: Only keep bullets that cover at least one missing keyword
+                        // This prevents AI from generating bullets for keywords not in our list
+                        if (!bullet.keywords || bullet.keywords.length === 0) {
+                            console.log('❌ Filtered out bullet (no missing keyword found):', bullet.text.substring(0, 80));
+                            return false;
+                        }
+                        return true;
                     });
             } else {
                 suggestions.bulletPoints = [];
