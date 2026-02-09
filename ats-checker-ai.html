@@ -618,7 +618,7 @@
         // Configuration - Replace with your Google Apps Script URL after deployment
         // To use local backend, set to 'http://localhost:3000'
         // To use Apps Script, set to your deployed Apps Script URL
-        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwzyadhTFbNakL-vVgq2MON6Z1ZG9kBPO5gUfQ6i3tlskhG79jT_AfIzFx1t5qIIBld0w/exec';
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyCqV7qxC-CAL7QF5CzrbX_QsoxBjACtx0YnfnN0Aw7PzfEtYt7DNpzSqOJIogqoYCNWw/exec';
 
         // PDF.js configuration
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -937,9 +937,15 @@
             if (needsRephrasing.length > 0) {
                 keywordHTML += `
                 <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Needs Rephrasing (${needsRephrasing.length})</h3>
-                <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 8px;">You have the skill but should use the exact JD terminology</p>
-                <div class="keywords-grid">
-                    ${needsRephrasing.map(kw => `<div class="keyword-tag" style="background: #fef3c7; color: #92400e; border-color: #fcd34d;">${kw}</div>`).join('')}
+                <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 8px;">Replace the word in your resume with the exact JD term:</p>
+                <div class="keywords-grid" style="flex-direction: column; gap: 8px;">
+                    ${needsRephrasing.map(item => {
+                        const resumeTerm = typeof item === 'object' ? (item.resumeTerm || '') : item;
+                        const jdTerm = typeof item === 'object' ? (item.jdTerm || '') : item;
+                        return `<div class="keyword-tag" style="background: #fef3c7; color: #92400e; border-color: #fcd34d; display: inline-flex; align-items: center; gap: 8px;">
+                            <span>Replace <strong>"${resumeTerm}"</strong> with <strong>"${jdTerm}"</strong></span>
+                        </div>`;
+                    }).join('')}
                 </div>`;
             }
             
