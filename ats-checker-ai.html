@@ -735,6 +735,80 @@ RULES:
                 analysis.skills.score = total > 0 ? Math.round((skillsMatched.length / total) * 100) : 100;
             }
 
+            // Check for formatting differences (case sensitivity, hyphenation)
+            const formattingRecommendations = [];
+            const allMatchedKeywords = [
+                ...(analysis.keywords?.matched || []),
+                ...(analysis.skills?.matched || [])
+            ];
+            
+            console.log('Checking formatting for', allMatchedKeywords.length, 'matched keywords');
+            
+            // Helper: Find exact text in resume (preserving case)
+            function findExactTextInResume(keyword) {
+                const keywordLower = keyword.toLowerCase();
+                // Search for the keyword in the original resume text
+                const regex = new RegExp('\\b' + keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '[-\\s]?') + '\\b', 'gi');
+                const matches = resume.match(regex);
+                return matches ? matches[0] : null;
+            }
+            
+            // Helper: Find exact text in JD (preserving case)
+            function findExactTextInJD(keyword) {
+                const keywordLower = keyword.toLowerCase();
+                const regex = new RegExp('\\b' + keywordLower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '[-\\s]?') + '\\b', 'gi');
+                const matches = jd.match(regex);
+                return matches ? matches[0] : null;
+            }
+            
+            allMatchedKeywords.forEach(keyword => {
+                const resumeVersion = findExactTextInResume(keyword);
+                const jdVersion = findExactTextInJD(keyword);
+                
+                if (resumeVersion && jdVersion && resumeVersion !== jdVersion) {
+                    console.log('Formatting difference found:', { keyword, resumeVersion, jdVersion });
+                    // Check for hyphenation differences
+                    if (resumeVersion.replace(/[-\s]/g, '').toLowerCase() === jdVersion.replace(/[-\s]/g, '').toLowerCase()) {
+                        if (jdVersion.includes('-') && !resumeVersion.includes('-')) {
+                            formattingRecommendations.push({
+                                type: 'important',
+                                text: `Update "${resumeVersion}" to "${jdVersion}" (use hyphen as in JD)`
+                            });
+                        } else if (!jdVersion.includes('-') && resumeVersion.includes('-')) {
+                            formattingRecommendations.push({
+                                type: 'important',
+                                text: `Update "${resumeVersion}" to "${jdVersion}" (remove hyphen to match JD)`
+                            });
+                        } else if (jdVersion.replace(/-/g, ' ') === resumeVersion || resumeVersion.replace(/-/g, ' ') === jdVersion) {
+                            formattingRecommendations.push({
+                                type: 'important',
+                                text: `Update "${resumeVersion}" to "${jdVersion}" (match JD spacing/hyphenation)`
+                            });
+                        }
+                    }
+                    // Check for case sensitivity differences (but same spelling)
+                    else if (resumeVersion.toLowerCase() === jdVersion.toLowerCase()) {
+                        formattingRecommendations.push({
+                            type: 'important',
+                            text: `Update "${resumeVersion}" to "${jdVersion}" (match JD capitalization for ATS)`
+                        });
+                    }
+                }
+            });
+            
+            // Add formatting recommendations to the recommendations array
+            if (formattingRecommendations.length > 0) {
+                console.log('Found', formattingRecommendations.length, 'formatting recommendations');
+                analysis.recommendations = analysis.recommendations || [];
+                formattingRecommendations.forEach(rec => {
+                    // Only add if not already in recommendations
+                    if (!analysis.recommendations.some(r => r.text === rec.text)) {
+                        analysis.recommendations.push(rec);
+                    }
+                });
+                console.log('Total recommendations after adding formatting:', analysis.recommendations.length);
+            }
+            
             // Recalculate overall score
             const kw = analysis.keywords?.score || 0;
             const sk = analysis.skills?.score || 0;
