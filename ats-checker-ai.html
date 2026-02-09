@@ -10,12 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0f1419;
@@ -23,521 +18,181 @@
             padding: 48px 24px;
             color: #1a1a1a;
         }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-
-        .header h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: #f5f5f5;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            font-size: 0.9375rem;
-            color: #94a3b8;
-            font-weight: 400;
-        }
-
+        .container { max-width: 960px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 48px; }
+        .header h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; color: #f5f5f5; margin-bottom: 8px; }
+        .header p { font-size: 0.9375rem; color: #94a3b8; font-weight: 400; }
         .header .badge {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-top: 8px;
+            color: white; padding: 4px 12px; border-radius: 12px;
+            font-size: 0.75rem; font-weight: 500; margin-top: 8px;
         }
-
         .main-card {
-            background: #ffffff;
-            border-radius: 8px;
+            background: #ffffff; border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-            border: 1px solid #e5e7eb;
-            padding: 40px;
-            margin-bottom: 24px;
+            border: 1px solid #e5e7eb; padding: 40px; margin-bottom: 24px;
         }
-
-        .upload-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 32px;
+        /* Setup box */
+        .setup-box {
+            background: #f0f9ff; border: 1px solid #bae6fd;
+            border-radius: 8px; padding: 24px; margin-bottom: 24px;
         }
-
+        .setup-box h3 { font-size: 0.9375rem; font-weight: 600; color: #0369a1; margin-bottom: 8px; }
+        .setup-box p { font-size: 0.8125rem; color: #475569; margin-bottom: 12px; line-height: 1.5; }
+        .setup-box input {
+            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1;
+            border-radius: 6px; font-size: 0.875rem; font-family: inherit; margin-bottom: 12px;
+        }
+        .setup-box input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        .setup-box button {
+            background: #0369a1; color: #fff; border: none; padding: 10px 24px;
+            border-radius: 6px; font-size: 0.875rem; font-weight: 500; cursor: pointer;
+        }
+        .setup-box button:hover { background: #0c4a6e; }
+        .setup-box a { color: #2563eb; text-decoration: none; }
+        .setup-box a:hover { text-decoration: underline; }
+        .change-key-link {
+            display: inline-block; font-size: 0.75rem; color: #94a3b8;
+            cursor: pointer; margin-top: -16px; margin-bottom: 16px;
+        }
+        .change-key-link:hover { color: #64748b; text-decoration: underline; }
+        /* Upload */
+        .upload-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
         .upload-box {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 28px;
-            text-align: center;
-            transition: border-color 0.2s, background 0.2s;
-            cursor: pointer;
-            background: #fafafa;
+            border: 1px solid #e5e7eb; border-radius: 6px; padding: 28px;
+            text-align: center; transition: border-color 0.2s, background 0.2s;
+            cursor: pointer; background: #fafafa;
         }
-
-        .upload-box:hover {
-            border-color: #c4b5fd;
-            background: #faf5ff;
-        }
-
-        .upload-box h3 {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-            letter-spacing: 0.01em;
-        }
-
-        .upload-box input[type="file"] {
-            display: none;
-        }
-
+        .upload-box:hover { border-color: #c4b5fd; background: #faf5ff; }
+        .upload-box h3 { font-size: 0.875rem; font-weight: 600; color: #374151; margin-bottom: 8px; letter-spacing: 0.01em; }
+        .upload-box input[type="file"] { display: none; }
         .upload-btn {
-            background: #1f2937;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8125rem;
-            font-weight: 500;
-            transition: background 0.2s;
+            background: #1f2937; color: #fff; border: none; padding: 10px 20px;
+            border-radius: 4px; cursor: pointer; font-size: 0.8125rem; font-weight: 500;
         }
-
-        .upload-btn:hover {
-            background: #374151;
-        }
-
-        .file-info {
-            margin-top: 12px;
-            color: #6b7280;
-            font-size: 0.8125rem;
-        }
-
-        .textarea-box {
-            width: 100%;
-        }
-
+        .upload-btn:hover { background: #374151; }
+        .file-info { margin-top: 12px; color: #6b7280; font-size: 0.8125rem; }
+        .textarea-box { width: 100%; }
         .textarea-box textarea {
-            width: 100%;
-            min-height: 140px;
-            padding: 12px 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.875rem;
-            resize: vertical;
-            color: #374151;
+            width: 100%; min-height: 140px; padding: 12px 14px;
+            border: 1px solid #e5e7eb; border-radius: 6px;
+            font-family: inherit; font-size: 0.875rem; resize: vertical; color: #374151;
         }
-
-        .textarea-box textarea:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
-        }
-
-        .textarea-box textarea::placeholder {
-            color: #9ca3af;
-        }
-
+        .textarea-box textarea:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.08); }
+        .textarea-box textarea::placeholder { color: #9ca3af; }
         .analyze-btn {
             width: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 0.9375rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.2s;
+            color: #fff; border: none; padding: 14px; border-radius: 6px;
+            font-size: 0.9375rem; font-weight: 500; cursor: pointer;
         }
-
-        .analyze-btn:hover:not(:disabled) {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .analyze-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .results {
-            display: none;
-        }
-
-        .results.show {
-            display: block;
-        }
-
+        .analyze-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        /* Results */
+        .results { display: none; }
+        .results.show { display: block; }
         .score-display {
-            text-align: center;
-            padding: 40px 32px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            margin-bottom: 32px;
+            text-align: center; padding: 40px 32px; background: #f9fafb;
+            border: 1px solid #e5e7eb; border-radius: 6px; margin-bottom: 32px;
         }
-
-        .score-number {
-            font-size: 4rem;
-            font-weight: 600;
-            color: #1f2937;
-            letter-spacing: -0.03em;
-        }
-
-        .score-label {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 8px;
-        }
-
+        .score-number { font-size: 4rem; font-weight: 600; color: #1f2937; letter-spacing: -0.03em; }
+        .score-label { font-size: 0.875rem; color: #6b7280; margin-top: 8px; }
         .industry-badge {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-top: 12px;
+            display: inline-block; background: #e0e7ff; color: #3730a3;
+            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-top: 12px;
         }
-
         .score-status {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 4px;
-            font-weight: 500;
-            font-size: 0.8125rem;
-            margin-top: 12px;
+            display: inline-block; padding: 6px 16px; border-radius: 4px;
+            font-weight: 500; font-size: 0.8125rem; margin-top: 12px;
         }
-
-        .score-status.excellent {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .score-status.good {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .score-status.fair {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .score-status.poor {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .analysis-section {
-            margin-bottom: 32px;
-        }
-
+        .score-status.excellent { background: #d1fae5; color: #065f46; }
+        .score-status.good { background: #dbeafe; color: #1e40af; }
+        .score-status.fair { background: #fef3c7; color: #92400e; }
+        .score-status.poor { background: #fee2e2; color: #991b1b; }
+        .analysis-section { margin-bottom: 32px; }
         .analysis-section h2 {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #e5e7eb;
-            letter-spacing: 0.01em;
+            font-size: 0.9375rem; font-weight: 600; color: #1f2937;
+            margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;
         }
-
         .metric-card {
-            background: #f9fafb;
-            padding: 18px 20px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            border: 1px solid #e5e7eb;
+            background: #f9fafb; padding: 18px 20px; border-radius: 6px;
+            margin-bottom: 12px; border: 1px solid #e5e7eb;
         }
-
-        .metric-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .metric-title {
-            font-weight: 500;
-            font-size: 0.875rem;
-            color: #374151;
-        }
-
-        .metric-score {
-            font-weight: 600;
-            font-size: 0.9375rem;
-        }
-
-        .metric-score.high {
-            color: #059669;
-        }
-
-        .metric-score.medium {
-            color: #d97706;
-        }
-
-        .metric-score.low {
-            color: #dc2626;
-        }
-
-        .metric-details {
-            color: #6b7280;
-            font-size: 0.8125rem;
-            line-height: 1.5;
-        }
-
+        .metric-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .metric-title { font-weight: 500; font-size: 0.875rem; color: #374151; }
+        .metric-score { font-weight: 600; font-size: 0.9375rem; }
+        .metric-score.high { color: #059669; }
+        .metric-score.medium { color: #d97706; }
+        .metric-score.low { color: #dc2626; }
+        .metric-details { color: #6b7280; font-size: 0.8125rem; line-height: 1.5; }
         .metric-tip {
-            margin-top: 10px;
-            padding: 10px 12px;
-            background: #f0f4f8;
-            border-left: 3px solid #64748b;
-            border-radius: 0 4px 4px 0;
-            font-size: 0.8rem;
-            color: #475569;
-            line-height: 1.4;
+            margin-top: 10px; padding: 10px 12px; background: #f0f4f8;
+            border-left: 3px solid #64748b; border-radius: 0 4px 4px 0;
+            font-size: 0.8rem; color: #475569; line-height: 1.4;
         }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.5s ease;
-        }
-
-        .suggestions-list {
-            list-style: none;
-        }
-
+        .progress-bar { width: 100%; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.5s ease; }
+        .suggestions-list { list-style: none; }
         .suggestion-item {
-            background: #fafafa;
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            font-size: 0.875rem;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-            border-left: 3px solid #8b5cf6;
+            background: #fafafa; padding: 14px 18px; margin-bottom: 8px; border-radius: 4px;
+            font-size: 0.875rem; color: #374151; border: 1px solid #e5e7eb; border-left: 3px solid #8b5cf6;
         }
-
-        .suggestion-item.critical {
-            border-left-color: #dc2626;
-        }
-
-        .suggestion-item.important {
-            border-left-color: #d97706;
-        }
-
-        .suggestion-item strong {
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .keywords-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .keyword-tag {
-            background: #1f2937;
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 4px;
-            text-align: center;
-            font-size: 0.8125rem;
-        }
-
-        .keyword-tag.missing {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .keyword-tag.found {
-            background: #f0fdf4;
-            color: #065f46;
-            border: 1px solid #bbf7d0;
-        }
-
+        .suggestion-item.critical { border-left-color: #dc2626; }
+        .suggestion-item.important { border-left-color: #d97706; }
+        .suggestion-item strong { color: #1f2937; font-weight: 600; }
+        .keywords-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 12px; }
+        .keyword-tag { background: #1f2937; color: #fff; padding: 6px 12px; border-radius: 4px; text-align: center; font-size: 0.8125rem; }
+        .keyword-tag.missing { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .keyword-tag.found { background: #f0fdf4; color: #065f46; border: 1px solid #bbf7d0; }
         .bullet-point-card {
-            background: #fafafa;
-            border: 1px solid #e5e7eb;
-            padding: 16px 20px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            position: relative;
-            transition: border-color 0.2s;
+            background: #fafafa; border: 1px solid #e5e7eb; padding: 16px 20px;
+            margin-bottom: 10px; border-radius: 6px; position: relative;
         }
-
-        .bullet-point-card:hover {
-            border-color: #c4b5fd;
-        }
-
-        .bullet-point-text {
-            font-size: 0.875rem;
-            line-height: 1.55;
-            color: #374151;
-            padding-right: 80px;
-        }
-
+        .bullet-point-card:hover { border-color: #c4b5fd; }
+        .bullet-point-text { font-size: 0.875rem; line-height: 1.55; color: #374151; padding-right: 80px; }
         .bullet-target {
-            display: inline-block;
-            background: #e0e7ff;
-            color: #3730a3;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-            margin-top: 8px;
+            display: inline-block; background: #e0e7ff; color: #3730a3;
+            padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; margin-top: 8px;
         }
-
         .copy-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #1f2937;
-            color: #fff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: background 0.2s;
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            background: #1f2937; color: #fff; border: none; padding: 6px 14px;
+            border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 500;
         }
-
-        .copy-btn:hover {
-            background: #374151;
-        }
-
-        .copy-btn.copied {
-            background: #059669;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 48px 24px;
-            display: none;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
+        .copy-btn:hover { background: #374151; }
+        .copy-btn.copied { background: #059669; }
+        .loading { text-align: center; padding: 48px 24px; display: none; }
+        .loading.show { display: block; }
         .spinner {
-            border: 3px solid #e5e7eb;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            border: 3px solid #e5e7eb; border-top: 3px solid #667eea;
+            border-radius: 50%; width: 48px; height: 48px;
+            animation: spin 1s linear infinite; margin: 0 auto 20px;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            color: #6b7280;
-            font-size: 0.9375rem;
-        }
-
-        .loading-subtext {
-            color: #9ca3af;
-            font-size: 0.8125rem;
-            margin-top: 8px;
-        }
-
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { color: #6b7280; font-size: 0.9375rem; }
+        .loading-subtext { color: #9ca3af; font-size: 0.8125rem; margin-top: 8px; }
         .info-box {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-left: 3px solid #6b7280;
-            padding: 14px 18px;
-            margin-bottom: 24px;
-            border-radius: 4px;
-            font-size: 0.8125rem;
-            color: #6b7280;
-            line-height: 1.5;
+            background: #f9fafb; border: 1px solid #e5e7eb; border-left: 3px solid #6b7280;
+            padding: 14px 18px; margin-bottom: 24px; border-radius: 4px;
+            font-size: 0.8125rem; color: #6b7280; line-height: 1.5;
         }
-
-        .info-box.success {
-            border-left-color: #059669;
-            background: #f0fdf4;
-        }
-
+        .info-box.success { border-left-color: #059669; background: #f0fdf4; }
         .style-analysis {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            padding: 14px 18px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 0.8125rem;
+            background: #f0f9ff; border: 1px solid #bae6fd; padding: 14px 18px;
+            border-radius: 6px; margin-bottom: 16px; font-size: 0.8125rem;
         }
-
-        .style-analysis h4 {
-            color: #0369a1;
-            font-size: 0.8125rem;
-            margin-bottom: 8px;
-        }
-
-        .style-analysis p {
-            color: #0c4a6e;
-            margin: 4px 0;
-        }
-
+        .style-analysis h4 { color: #0369a1; font-size: 0.8125rem; margin-bottom: 8px; }
+        .style-analysis p { color: #0c4a6e; margin: 4px 0; }
         .error-box {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-left: 3px solid #dc2626;
-            padding: 14px 18px;
-            border-radius: 4px;
-            color: #991b1b;
-            font-size: 0.875rem;
-            margin-bottom: 24px;
+            background: #fef2f2; border: 1px solid #fecaca; border-left: 3px solid #dc2626;
+            padding: 14px 18px; border-radius: 4px; color: #991b1b; font-size: 0.875rem; margin-bottom: 24px;
         }
-
         @media (max-width: 768px) {
-            .upload-section {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .main-card {
-                padding: 24px;
-            }
-
-            .score-number {
-                font-size: 3rem;
-            }
+            .upload-section { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.5rem; }
+            .main-card { padding: 24px; }
+            .score-number { font-size: 3rem; }
         }
     </style>
 </head>
@@ -550,8 +205,26 @@
         </div>
 
         <div class="main-card">
+            <!-- API Key Setup -->
+            <div class="setup-box" id="setupBox">
+                <h3>Setup - Enter your Groq API Key</h3>
+                <p>
+                    You need a free Groq API key to use this tool. 
+                    <a href="https://console.groq.com/keys" target="_blank">Get your free key here</a>.
+                    Your key is stored only in your browser and never sent anywhere except Groq.
+                </p>
+                <input type="password" id="apiKeyInput" placeholder="gsk_...">
+                <button onclick="saveApiKey()">Save Key</button>
+            </div>
+
+            <div id="changeKeyContainer" style="display:none;">
+                <span class="change-key-link" onclick="showSetup()">Change API Key</span>
+            </div>
+
             <div class="info-box">
-                Dynamic analysis using AI - works for any job type: Tech, Marketing, Healthcare, Finance, Legal, HR, and more. Uses strict matching like real ATS systems (Workday, Taleo, iCIMS). <strong>Tip:</strong> Use EXACT keywords from the job description in your resume.
+                Dynamic analysis using AI - works for any job type: Tech, Marketing, Healthcare, Finance, Legal, HR, and more.
+                Uses strict matching like real ATS systems (Workday, Taleo, iCIMS).
+                <strong>Tip:</strong> Use EXACT keywords from the job description in your resume.
             </div>
 
             <div class="upload-section">
@@ -615,18 +288,42 @@
     </div>
 
     <script>
-        // Configuration - Replace with your Google Apps Script URL after deployment
-        // To use local backend, set to 'http://localhost:3000'
-        // To use Apps Script, set to your deployed Apps Script URL
-        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbypUCxn_KFBo-gmahg4GdKssEYA5WnmCKGscPXZ0xfl8-mzFxN9R9-iUGi57Ri7ZWo7mw/exec';
+        // ============================================
+        // API Key Management
+        // ============================================
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (!key) { alert('Please enter an API key.'); return; }
+            localStorage.setItem('groqApiKey', key);
+            document.getElementById('setupBox').style.display = 'none';
+            document.getElementById('changeKeyContainer').style.display = 'block';
+        }
 
+        function showSetup() {
+            document.getElementById('setupBox').style.display = 'block';
+            document.getElementById('changeKeyContainer').style.display = 'none';
+            document.getElementById('apiKeyInput').value = localStorage.getItem('groqApiKey') || '';
+        }
+
+        // On load: check if key exists
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('groqApiKey')) {
+                document.getElementById('setupBox').style.display = 'none';
+                document.getElementById('changeKeyContainer').style.display = 'block';
+            }
+        });
+
+        // ============================================
         // PDF.js configuration
+        // ============================================
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         let resumeText = '';
         let jobDescriptionText = '';
 
-        // File upload handling
+        // ============================================
+        // File Upload
+        // ============================================
         document.getElementById('resumeFile').addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
@@ -642,462 +339,626 @@
         });
 
         function checkIfReadyToAnalyze() {
-            const btn = document.getElementById('analyzeBtn');
-            btn.disabled = !(resumeText && jobDescriptionText.trim());
+            document.getElementById('analyzeBtn').disabled = !(resumeText && jobDescriptionText.trim());
         }
 
         async function extractTextFromFile(file) {
-            const fileName = file.name.toLowerCase();
-            
-            if (fileName.endsWith('.pdf')) {
-                return await extractTextFromPDF(file);
-            } else if (fileName.endsWith('.docx')) {
-                return await extractTextFromDOCX(file);
-            }
-            
+            const name = file.name.toLowerCase();
+            if (name.endsWith('.pdf')) return await extractTextFromPDF(file);
+            if (name.endsWith('.docx')) return await extractTextFromDOCX(file);
             return '';
         }
 
         async function extractTextFromPDF(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(buf).promise;
             let text = '';
-            
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(' ');
-                text += pageText + '\n';
+                text += content.items.map(item => item.str).join(' ') + '\n';
             }
-            
             return text;
         }
 
         async function extractTextFromDOCX(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            const buf = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: buf });
             return result.value;
         }
 
-        // Analysis logic
-        document.getElementById('analyzeBtn').addEventListener('click', function() {
-            analyzeResume();
-        });
+        // ============================================
+        // Groq API Call (browser-direct)
+        // ============================================
+        async function callGroqAPI(prompt, maxTokens = 3000, temperature = 0.1) {
+            const apiKey = localStorage.getItem('groqApiKey');
+            if (!apiKey) throw new Error('No API key set. Please enter your Groq API key above.');
+
+            const models = ['llama-3.1-8b-instant', 'gemma2-9b-it'];
+            let lastError = null;
+
+            for (const model of models) {
+                try {
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + apiKey,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{ role: 'user', content: prompt }],
+                            temperature: temperature,
+                            max_tokens: maxTokens,
+                            response_format: { type: 'json_object' }
+                        })
+                    });
+
+                    if (res.status === 429) {
+                        console.log('Rate limited on ' + model + ', trying next...');
+                        lastError = new Error('Rate limit exceeded');
+                        continue;
+                    }
+
+                    if (res.status === 401) {
+                        throw new Error('Invalid API key. Please check your Groq API key.');
+                    }
+
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        throw new Error('API error (' + res.status + '): ' + errText);
+                    }
+
+                    const data = await res.json();
+                    const content = data.choices[0]?.message?.content || '{}';
+                    console.log('Completed using model: ' + model);
+                    return JSON.parse(content);
+                } catch (error) {
+                    lastError = error;
+                    if (error.message.includes('Invalid API key')) throw error;
+                    console.error('Error with ' + model + ':', error.message);
+                }
+            }
+
+            if (lastError?.message?.includes('Rate limit')) {
+                throw new Error('All models rate limited. Please wait a few minutes and try again.');
+            }
+            throw lastError || new Error('All models failed');
+        }
+
+        // ============================================
+        // Step 1: AI Analysis
+        // ============================================
+        async function analyzeResumeMatch(resume, jd) {
+            const prompt = `You are an ATS (Applicant Tracking System) analyzer. Compare the JOB DESCRIPTION and RESUME below.
+
+JOB DESCRIPTION:
+${jd}
+
+RESUME:
+${resume}
+
+Return a JSON object:
+{
+  "overallScore": <0-100>,
+  "knockoutFilters": {
+    "passed": [{"filter": "name", "required": "what JD says", "found": "what resume has"}],
+    "failed": [{"filter": "name", "required": "what JD says", "message": "why failed"}],
+    "warnings": [{"filter": "name", "required": "what JD says", "found": "what resume has", "message": "note"}]
+  },
+  "keywords": {
+    "extracted": ["every keyword/skill from JD"],
+    "matched": ["keywords found in resume"],
+    "missing": ["keywords NOT in resume at all"],
+    "needsRephrasing": [{"resumeTerm": "word in resume", "jdTerm": "word in JD"}],
+    "score": <0-100>
+  },
+  "skills": {
+    "required": ["skills from JD"],
+    "matched": ["skills in resume"],
+    "missing": ["skills not in resume"],
+    "score": <0-100>
+  },
+  "experience": {
+    "requiredYears": <number or null>,
+    "detectedYears": <number>,
+    "isRecent": <boolean>,
+    "relevanceScore": <0-100>,
+    "score": <0-100>
+  },
+  "education": {
+    "required": "degree from JD or null",
+    "found": "degree in resume or null",
+    "matched": <boolean>,
+    "score": <0-100>
+  },
+  "certifications": {
+    "required": ["from JD"],
+    "found": ["in resume"],
+    "matched": ["matching"],
+    "missing": ["missing"],
+    "score": <0-100>
+  },
+  "jobTitle": {
+    "targetTitle": "JD title",
+    "resumeTitles": ["resume titles"],
+    "matchType": "exact|partial|none",
+    "score": <0-100>
+  },
+  "recommendations": [{"type": "critical|important|tip", "text": "recommendation"}],
+  "industryDetected": "industry name"
+}
+
+RULES:
+1. "extracted" must ONLY contain terms explicitly in the JD text
+2. "matched" = keyword exists in resume (case-insensitive)
+3. "needsRephrasing" = resume has a synonym (e.g. resume: "Docker", JD: "Container technology"). Return {"resumeTerm": "Docker", "jdTerm": "Container technology"}. Do NOT also put it in "missing"
+4. "missing" = keyword from JD with NO similar term in resume at all
+5. knockoutFilters.failed = ONLY for requirements EXPLICITLY stated as required/mandatory in JD. Do NOT fail on things the JD does not mention
+6. recommendations must ONLY reference JD content, never suggest highlighting unrelated resume content
+7. If resume experience >= JD requirement, it passes
+8. Score: keywords 35%, experience 25%, education 20%, title 10%, skills 10%
+9. Return ONLY valid JSON`;
+
+            const result = await callGroqAPI(prompt, 3000, 0.1);
+            return verifyAnalysis(result, resume, jd);
+        }
+
+        // ============================================
+        // Step 1b: Programmatic Verification
+        // ============================================
+        function verifyAnalysis(analysis, resume, jd) {
+            const resumeLower = resume.toLowerCase();
+            const jdLower = jd.toLowerCase();
+
+            // Helper: check if a phrase appears in text
+            function appearsIn(text, phrase) {
+                if (!phrase) return false;
+                const p = phrase.toLowerCase();
+                if (text.includes(p)) return true;
+                // Check plural/singular
+                if (p.endsWith('s') && text.includes(p.slice(0, -1))) return true;
+                if (!p.endsWith('s') && text.includes(p + 's')) return true;
+                if (p.endsWith('es') && text.includes(p.slice(0, -2))) return true;
+                return false;
+            }
+
+            // Helper: check if phrase (or all its significant words) appear in JD
+            function isInJD(phrase) {
+                if (!phrase || typeof phrase !== 'string') return false;
+                const lower = phrase.toLowerCase();
+                if (jdLower.includes(lower)) return true;
+                const words = lower.split(/\s+/).filter(w => w.length >= 3);
+                return words.length > 0 && words.every(w => jdLower.includes(w));
+            }
+
+            if (analysis.keywords) {
+                // 1. Normalize needsRephrasing
+                let rephrase = (analysis.keywords.needsRephrasing || [])
+                    .map(item => {
+                        if (typeof item === 'object' && item.resumeTerm && item.jdTerm) return item;
+                        if (typeof item === 'string') return { resumeTerm: item, jdTerm: item };
+                        return null;
+                    })
+                    .filter(Boolean)
+                    // Verify: jdTerm must be in JD, resumeTerm must be in resume
+                    .filter(r => isInJD(r.jdTerm) && appearsIn(resumeLower, r.resumeTerm));
+
+                const rephraseJdTerms = new Set(rephrase.map(r => r.jdTerm.toLowerCase()));
+
+                // 2. Filter extracted to only JD terms
+                if (Array.isArray(analysis.keywords.extracted)) {
+                    analysis.keywords.extracted = analysis.keywords.extracted.filter(isInJD);
+                }
+
+                // 3. Process missing: must be in JD, must NOT be in resume, must NOT be in rephrase
+                let missing = (analysis.keywords.missing || [])
+                    .filter(k => isInJD(k))
+                    .filter(k => !rephraseJdTerms.has(k.toLowerCase()));
+
+                const matched = [...(analysis.keywords.matched || [])];
+                const verifiedMissing = [];
+
+                for (const keyword of missing) {
+                    if (appearsIn(resumeLower, keyword)) {
+                        if (!matched.some(m => m.toLowerCase() === keyword.toLowerCase())) {
+                            matched.push(keyword);
+                        }
+                    } else {
+                        verifiedMissing.push(keyword);
+                    }
+                }
+
+                analysis.keywords.matched = matched;
+                analysis.keywords.missing = verifiedMissing;
+                analysis.keywords.needsRephrasing = rephrase;
+                const total = matched.length + verifiedMissing.length;
+                analysis.keywords.score = total > 0 ? Math.round((matched.length / total) * 100) : 100;
+            }
+
+            // Verify skills.missing
+            if (analysis.skills) {
+                const skillsMissing = (analysis.skills.missing || []).filter(isInJD);
+                const skillsMatched = [...(analysis.skills.matched || [])];
+                const verifiedSkillsMissing = [];
+
+                for (const skill of skillsMissing) {
+                    if (appearsIn(resumeLower, skill)) {
+                        if (!skillsMatched.some(m => m.toLowerCase() === skill.toLowerCase())) {
+                            skillsMatched.push(skill);
+                        }
+                    } else {
+                        verifiedSkillsMissing.push(skill);
+                    }
+                }
+
+                analysis.skills.matched = skillsMatched;
+                analysis.skills.missing = verifiedSkillsMissing;
+                const total = skillsMatched.length + verifiedSkillsMissing.length;
+                analysis.skills.score = total > 0 ? Math.round((skillsMatched.length / total) * 100) : 100;
+            }
+
+            // Recalculate overall score
+            const kw = analysis.keywords?.score || 0;
+            const sk = analysis.skills?.score || 0;
+            const ex = analysis.experience?.score || 0;
+            const ed = analysis.education?.score || 0;
+            const ti = analysis.jobTitle?.score || 0;
+            analysis.overallScore = Math.round((kw * 0.35) + (ex * 0.25) + (ed * 0.20) + (ti * 0.10) + (sk * 0.10));
+
+            return analysis;
+        }
+
+        // ============================================
+        // Step 2: AI Suggestions
+        // ============================================
+        async function generateSuggestions(resume, jd, analysis) {
+            const missingKw = [
+                ...(analysis.keywords?.missing || []),
+                ...(analysis.skills?.missing || [])
+            ];
+            const missing = [...new Set(missingKw)].slice(0, 15);
+
+            const rephrase = (analysis.keywords?.needsRephrasing || [])
+                .filter(r => typeof r === 'object' && r.resumeTerm && r.jdTerm);
+
+            if (missing.length === 0 && rephrase.length === 0) {
+                return { bulletPoints: [], rephraseSuggestions: [] };
+            }
+
+            const rephraseText = rephrase.length > 0
+                ? rephrase.map(r => 'Resume: "' + r.resumeTerm + '" -> JD: "' + r.jdTerm + '"').join('\n')
+                : 'None';
+
+            const missingText = missing.length > 0 ? missing.join(', ') : 'None';
+
+            const prompt = `You are an expert resume writer. Compare these two documents and generate suggestions.
+
+JOB DESCRIPTION:
+${jd}
+
+RESUME:
+${resume}
+
+TERMS TO REPHRASE (resume has synonym, use JD wording):
+${rephraseText}
+
+MISSING KEYWORDS (in JD, not in resume at all):
+${missingText}
+
+TASKS:
+
+1. REPHRASE: For each rephrase pair, find the exact bullet point or phrase in the resume where the resume term appears. Rewrite it to include the JD term.
+   - currentText: copy the exact line from the resume
+   - suggestedText: rewrite that line to include the JD term
+
+2. BULLET POINTS: For each missing keyword, write ONE new bullet point that:
+   - Matches the resume's writing style (action verbs, metrics, tone)
+   - Naturally includes the missing keyword
+   - Draws from the person's existing experience where possible
+   - Sounds like a real achievement
+
+Return JSON:
+{
+  "rephraseSuggestions": [
+    {"currentText": "exact line from resume", "suggestedText": "rewritten line with JD term", "keyword": "JD term", "resumeTerm": "resume word", "jdTerm": "JD word"}
+  ],
+  "bulletPoints": [
+    {"text": "full bullet point", "keywords": ["missing keyword covered"], "targetSection": "Experience"}
+  ]
+}
+
+RULES:
+- currentText must be copied from the actual resume text
+- bulletPoints only for MISSING keywords, not rephrase keywords
+- Each bullet's keywords must be from the MISSING list only
+- Return ONLY valid JSON`;
+
+            try {
+                const result = await callGroqAPI(prompt, 2500, 0.3);
+                return verifySuggestions(result, missing);
+            } catch (error) {
+                console.error('Suggestions error:', error);
+                return { bulletPoints: [], rephraseSuggestions: [], error: error.message };
+            }
+        }
+
+        // ============================================
+        // Step 2b: Verify Suggestions
+        // ============================================
+        function verifySuggestions(suggestions, missingKeywords) {
+            // Keep all rephrase suggestions that have non-empty text
+            if (Array.isArray(suggestions.rephraseSuggestions)) {
+                suggestions.rephraseSuggestions = suggestions.rephraseSuggestions
+                    .filter(r => r && r.currentText && r.suggestedText);
+            } else {
+                suggestions.rephraseSuggestions = [];
+            }
+
+            // Keep all bullet points that have text; tag with keywords found in text
+            if (Array.isArray(suggestions.bulletPoints)) {
+                suggestions.bulletPoints = suggestions.bulletPoints
+                    .filter(b => b && b.text && b.text.length > 10)
+                    .map(bullet => {
+                        const textLower = bullet.text.toLowerCase();
+                        // Tag with which missing keywords appear in the bullet text
+                        const foundKeywords = missingKeywords.filter(mk =>
+                            textLower.includes(mk.toLowerCase()) ||
+                            mk.toLowerCase().split(/\s+/).filter(w => w.length > 3).some(w => textLower.includes(w))
+                        );
+                        bullet.keywords = foundKeywords.length > 0 ? foundKeywords : (bullet.keywords || []);
+                        return bullet;
+                    });
+            } else {
+                suggestions.bulletPoints = [];
+            }
+
+            return suggestions;
+        }
+
+        // ============================================
+        // Main Analysis Flow
+        // ============================================
+        document.getElementById('analyzeBtn').addEventListener('click', function() { analyzeResume(); });
 
         async function analyzeResume() {
+            if (!localStorage.getItem('groqApiKey')) {
+                document.getElementById('errorContainer').innerHTML = '<div class="error-box">Please enter your Groq API key first.</div>';
+                showSetup();
+                return;
+            }
+
             document.getElementById('loading').classList.add('show');
             document.getElementById('results').classList.remove('show');
             document.getElementById('errorContainer').innerHTML = '';
 
             try {
-                // Determine the correct endpoint based on whether it's Apps Script or local backend
-                const isAppsScript = API_BASE_URL.includes('script.google.com');
-                const endpoint = isAppsScript ? API_BASE_URL : `${API_BASE_URL}/api/analyze`;
-                
-                let data;
-                
-                if (isAppsScript) {
-                    // Apps Script requires special handling - no custom headers to avoid preflight
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            resume: resumeText,
-                            jobDescription: jobDescriptionText
-                        })
-                    });
-                    
-                    const responseText = await response.text();
-                    
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (e) {
-                        console.error('Response:', responseText);
-                        throw new Error('Invalid response from server. Check browser console for details.');
-                    }
-                } else {
-                    // Local backend
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            resume: resumeText,
-                            jobDescription: jobDescriptionText
-                        })
-                    });
+                // Step 1: Analysis
+                const analysis = await analyzeResumeMatch(resumeText, jobDescriptionText);
 
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
+                // Step 2: Suggestions
+                const suggestions = await generateSuggestions(resumeText, jobDescriptionText, analysis);
 
-                    data = await response.json();
-                }
-
-                if (data.success) {
-                    displayResults(data.analysis, data.suggestions);
-                } else {
-                    throw new Error(data.error || 'Analysis failed');
-                }
-
+                // Display
+                displayResults(analysis, suggestions);
             } catch (error) {
                 console.error('Analysis error:', error);
-                const isAppsScript = API_BASE_URL.includes('script.google.com');
-                const helpText = isAppsScript 
-                    ? 'Make sure your Apps Script is deployed and the URL is correct'
-                    : `Make sure the backend server is running on ${API_BASE_URL}`;
-                document.getElementById('errorContainer').innerHTML = `
-                    <div class="error-box">
-                        <strong>Analysis Failed:</strong> ${error.message}<br>
-                        <span style="font-size: 0.8rem;">${helpText}</span>
-                    </div>
-                `;
+                let helpText = 'Check the browser console for details.';
+                if (error.message.includes('API key')) helpText = 'Go to the setup above and enter a valid key.';
+                if (error.message.includes('Rate limit')) helpText = 'Your free tier limit was reached. Wait a few minutes.';
+                document.getElementById('errorContainer').innerHTML =
+                    '<div class="error-box"><strong>Analysis Failed:</strong> ' + error.message +
+                    '<br><span style="font-size:0.8rem;">' + helpText + '</span></div>';
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }
         }
 
+        // ============================================
+        // Display Results (unchanged logic)
+        // ============================================
         function displayResults(analysis, suggestions) {
             document.getElementById('results').classList.add('show');
-            
-            // Display score
+
+            // Score
             const score = analysis.overallScore || 0;
             document.getElementById('scoreNumber').textContent = score;
-            
-            // Display industry
+
             if (analysis.industryDetected) {
-                document.getElementById('industryBadge').innerHTML = `
-                    <span class="industry-badge">${analysis.industryDetected}</span>
-                `;
-            }
-            
-            // Score status
-            const statusEl = document.getElementById('scoreStatus');
-            if (score >= 80) {
-                statusEl.textContent = 'Strong Match - Likely to Pass';
-                statusEl.className = 'score-status excellent';
-            } else if (score >= 60) {
-                statusEl.textContent = 'Moderate Match - May Pass';
-                statusEl.className = 'score-status good';
-            } else if (score >= 40) {
-                statusEl.textContent = 'Weak Match - Needs Work';
-                statusEl.className = 'score-status fair';
-            } else {
-                statusEl.textContent = 'Low Match - Likely Filtered';
-                statusEl.className = 'score-status poor';
+                document.getElementById('industryBadge').innerHTML = '<span class="industry-badge">' + analysis.industryDetected + '</span>';
             }
 
-            // Display metrics
+            const statusEl = document.getElementById('scoreStatus');
+            if (score >= 80) { statusEl.textContent = 'Strong Match - Likely to Pass'; statusEl.className = 'score-status excellent'; }
+            else if (score >= 60) { statusEl.textContent = 'Moderate Match - May Pass'; statusEl.className = 'score-status good'; }
+            else if (score >= 40) { statusEl.textContent = 'Weak Match - Needs Work'; statusEl.className = 'score-status fair'; }
+            else { statusEl.textContent = 'Low Match - Likely Filtered'; statusEl.className = 'score-status poor'; }
+
+            // Metrics
             const metricsContainer = document.getElementById('metricsContainer');
             let metricsHTML = '';
-            
-            // Knockout filters
+
             if (analysis.knockoutFilters) {
                 const kf = analysis.knockoutFilters;
                 const hasIssues = (kf.failed?.length > 0) || (kf.warnings?.length > 0);
                 const knockoutScore = hasIssues ? (kf.failed?.length > 0 ? 0 : 50) : 100;
-                let knockoutDetails = `${kf.passed?.length || 0} passed, ${kf.warnings?.length || 0} warnings, ${kf.failed?.length || 0} failed`;
-                
-                // Add details about failed/warning filters
-                if (kf.failed?.length > 0) {
-                    knockoutDetails += '<br><strong style="color:#dc2626">Failed:</strong> ' + kf.failed.map(f => f.filter).join(', ');
-                }
-                if (kf.warnings?.length > 0) {
-                    knockoutDetails += '<br><strong style="color:#d97706">Warnings:</strong> ' + kf.warnings.map(w => w.filter).join(', ');
-                }
-                
-                const knockoutReason = kf.failed?.length > 0 
-                    ? '<strong>Why 0%:</strong> Failed knockout filters result in automatic rejection by ATS systems, regardless of other qualifications.'
-                    : kf.warnings?.length > 0 
+                let knockoutDetails = (kf.passed?.length || 0) + ' passed, ' + (kf.warnings?.length || 0) + ' warnings, ' + (kf.failed?.length || 0) + ' failed';
+                if (kf.failed?.length > 0) knockoutDetails += '<br><strong style="color:#dc2626">Failed:</strong> ' + kf.failed.map(f => f.filter).join(', ');
+                if (kf.warnings?.length > 0) knockoutDetails += '<br><strong style="color:#d97706">Warnings:</strong> ' + kf.warnings.map(w => w.filter).join(', ');
+                const knockoutReason = kf.failed?.length > 0
+                    ? '<strong>Why 0%:</strong> Failed knockout filters result in automatic rejection.'
+                    : kf.warnings?.length > 0
                     ? '<strong>Why 50%:</strong> Warnings indicate preferred qualifications that are missing but not mandatory.'
-                    : '<strong>Why 100%:</strong> All mandatory requirements (experience, degree, certifications) are met.';
-                
+                    : '<strong>Why 100%:</strong> All mandatory requirements are met.';
                 metricsHTML += createMetricCard('Knockout Filters', knockoutScore, knockoutDetails, knockoutReason);
             }
-            
-            // Keywords
+
             if (analysis.keywords) {
                 const matched = analysis.keywords.matched?.length || 0;
                 const total = analysis.keywords.extracted?.length || 0;
                 const kwScore = analysis.keywords.score || 0;
-                const kwReason = `<strong>Why ${kwScore}%:</strong> ${matched} out of ${total} job description keywords found in your resume. Score = (matched/total) × 100.`;
-                metricsHTML += createMetricCard(
-                    'Keyword Match (35% weight)',
-                    kwScore,
-                    `${matched} of ${total} keywords found`,
-                    kwReason
-                );
+                metricsHTML += createMetricCard('Keyword Match (35% weight)', kwScore, matched + ' of ' + total + ' keywords found',
+                    '<strong>Why ' + kwScore + '%:</strong> ' + matched + ' out of ' + total + ' JD keywords found in resume.');
             }
-            
-            // Skills
+
             if (analysis.skills) {
                 const matched = analysis.skills.matched?.length || 0;
                 const total = analysis.skills.required?.length || 0;
-                const skillScore = analysis.skills.score || 0;
-                const skillsReason = `<strong>Why ${skillScore}%:</strong> ${matched} out of ${total} required skills found in your resume. Score = (matched/total) × 100.`;
-                metricsHTML += createMetricCard(
-                    'Skills Match (10% weight)',
-                    skillScore,
-                    `${matched} of ${total} skills found`,
-                    skillsReason
-                );
+                const sScore = analysis.skills.score || 0;
+                metricsHTML += createMetricCard('Skills Match (10% weight)', sScore, matched + ' of ' + total + ' skills found',
+                    '<strong>Why ' + sScore + '%:</strong> ' + matched + ' out of ' + total + ' required skills found.');
             }
-            
-            // Experience
+
             if (analysis.experience) {
                 const detected = analysis.experience.detectedYears || 0;
                 const required = analysis.experience.requiredYears;
-                const expScore = analysis.experience.score || 0;
-                let expReason = `<strong>Why ${expScore}%:</strong> `;
+                const eScore = analysis.experience.score || 0;
+                let eReason = '<strong>Why ' + eScore + '%:</strong> ';
                 if (required) {
-                    if (detected >= required) {
-                        expReason += `You have ${detected} years, meeting the ${required}+ years requirement.`;
-                    } else {
-                        expReason += `You have ${detected} years but ${required}+ years are required. Score reduced proportionally.`;
-                    }
+                    eReason += detected >= required
+                        ? 'You have ' + detected + ' years, meeting the ' + required + '+ years requirement.'
+                        : 'You have ' + detected + ' years but ' + required + '+ years are required.';
                 } else {
-                    expReason += `${detected} years of experience detected. No specific requirement stated in JD.`;
+                    eReason += detected + ' years detected. No specific requirement stated.';
                 }
-                metricsHTML += createMetricCard(
-                    'Experience (25% weight)',
-                    expScore,
-                    `${detected} years detected${required ? ` (${required}+ required)` : ''}`,
-                    expReason
-                );
+                metricsHTML += createMetricCard('Experience (25% weight)', eScore,
+                    detected + ' years detected' + (required ? ' (' + required + '+ required)' : ''), eReason);
             }
-            
-            // Education
+
             if (analysis.education) {
-                const eduScore = analysis.education.score || 0;
+                const edScore = analysis.education.score || 0;
                 const found = analysis.education.found;
                 const required = analysis.education.required;
-                let eduReason = `<strong>Why ${eduScore}%:</strong> `;
-                if (analysis.education.matched) {
-                    eduReason += found ? `"${found}" meets the education requirement.` : 'Education requirement met.';
-                } else if (required) {
-                    eduReason += `Job requires "${required}" but found "${found || 'none'}".`;
-                } else {
-                    eduReason += found ? `"${found}" detected. No specific degree required.` : 'No education detected in resume.';
-                }
-                metricsHTML += createMetricCard(
-                    'Education (20% weight)',
-                    eduScore,
-                    found || 'Not detected',
-                    eduReason
-                );
+                let edReason = '<strong>Why ' + edScore + '%:</strong> ';
+                if (analysis.education.matched) edReason += found ? '"' + found + '" meets the requirement.' : 'Education requirement met.';
+                else if (required) edReason += 'Job requires "' + required + '" but found "' + (found || 'none') + '".';
+                else edReason += found ? '"' + found + '" detected. No specific degree required.' : 'No education detected.';
+                metricsHTML += createMetricCard('Education (20% weight)', edScore, found || 'Not detected', edReason);
             }
-            
-            // Job Title
+
             if (analysis.jobTitle) {
-                const titleScore = analysis.jobTitle.score || 0;
+                const tScore = analysis.jobTitle.score || 0;
                 const matchType = analysis.jobTitle.matchType || 'none';
                 const target = analysis.jobTitle.targetTitle || 'N/A';
-                let titleReason = `<strong>Why ${titleScore}%:</strong> `;
-                if (matchType === 'exact') {
-                    titleReason += `Your resume titles exactly match "${target}".`;
-                } else if (matchType === 'partial') {
-                    titleReason += `Your resume titles partially match "${target}" (similar role/level).`;
-                } else {
-                    titleReason += `No title match found for "${target}" in your resume.`;
-                }
-                metricsHTML += createMetricCard(
-                    'Job Title Alignment (10% weight)',
-                    titleScore,
-                    `${matchType} match for "${target}"`,
-                    titleReason
-                );
+                let tReason = '<strong>Why ' + tScore + '%:</strong> ';
+                if (matchType === 'exact') tReason += 'Your titles exactly match "' + target + '".';
+                else if (matchType === 'partial') tReason += 'Your titles partially match "' + target + '".';
+                else tReason += 'No title match for "' + target + '".';
+                metricsHTML += createMetricCard('Job Title Alignment (10% weight)', tScore, matchType + ' match for "' + target + '"', tReason);
             }
-            
+
             metricsContainer.innerHTML = metricsHTML;
 
-            // Display recommendations
+            // Recommendations
             const suggestionsList = document.getElementById('suggestionsList');
-            if (analysis.recommendations && analysis.recommendations.length > 0) {
-                suggestionsList.innerHTML = analysis.recommendations.map(r => `
-                    <li class="suggestion-item ${r.type}">
-                        <strong>${r.type === 'critical' ? 'Critical:' : r.type === 'important' ? 'Important:' : 'Tip:'}</strong> ${r.text}
-                    </li>
-                `).join('');
+            if (analysis.recommendations?.length > 0) {
+                suggestionsList.innerHTML = analysis.recommendations.map(r =>
+                    '<li class="suggestion-item ' + r.type + '"><strong>' +
+                    (r.type === 'critical' ? 'Critical:' : r.type === 'important' ? 'Important:' : 'Tip:') +
+                    '</strong> ' + r.text + '</li>'
+                ).join('');
             } else {
-                suggestionsList.innerHTML = '<li class="suggestion-item">No specific recommendations at this time.</li>';
+                suggestionsList.innerHTML = '<li class="suggestion-item">No specific recommendations.</li>';
             }
 
-            // Display keyword analysis
+            // Keywords
             const keywordAnalysis = document.getElementById('keywordAnalysis');
             const matchedKw = analysis.keywords?.matched || [];
             const missingKw = analysis.keywords?.missing || [];
             const needsRephrasing = analysis.keywords?.needsRephrasing || [];
-            
-            let keywordHTML = `
-                <h3 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Found in resume (${matchedKw.length})</h3>
-                <div class="keywords-grid">
-                    ${matchedKw.slice(0, 20).map(kw => `<div class="keyword-tag found">${kw}</div>`).join('')}
-                </div>`;
-            
-            if (needsRephrasing.length > 0) {
-                keywordHTML += `
-                <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Needs Rephrasing (${needsRephrasing.length})</h3>
-                <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 8px;">Replace the word in your resume with the exact JD term:</p>
-                <div class="keywords-grid" style="flex-direction: column; gap: 8px;">
-                    ${needsRephrasing.map(item => {
-                        const resumeTerm = typeof item === 'object' ? (item.resumeTerm || '') : item;
-                        const jdTerm = typeof item === 'object' ? (item.jdTerm || '') : item;
-                        return `<div class="keyword-tag" style="background: #fef3c7; color: #92400e; border-color: #fcd34d; display: inline-flex; align-items: center; gap: 8px;">
-                            <span>Replace <strong>"${resumeTerm}"</strong> with <strong>"${jdTerm}"</strong></span>
-                        </div>`;
-                    }).join('')}
-                </div>`;
-            }
-            
-            keywordHTML += `
-                <h3 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">Missing (${missingKw.length})</h3>
-                <div class="keywords-grid">
-                    ${missingKw.length > 0 ? missingKw.slice(0, 20).map(kw => `<div class="keyword-tag missing">${kw}</div>`).join('') : '<span style="color: #059669;">No missing keywords!</span>'}
-                </div>
-            `;
-            
-            keywordAnalysis.innerHTML = keywordHTML;
 
-            // Display bullet point suggestions
-            const bulletPointsContainer = document.getElementById('bulletPoints');
-            
-            if (suggestions && suggestions.bulletPoints && suggestions.bulletPoints.length > 0) {
-                // Show style analysis if available
-                let styleHTML = '';
-                if (suggestions.styleAnalysis) {
-                    const sa = suggestions.styleAnalysis;
-                    styleHTML = `
-                        <div class="style-analysis">
-                            <h4>Your Resume's Writing Style</h4>
-                            <p><strong>Action verbs you use:</strong> ${sa.actionVerbs?.slice(0, 5).join(', ') || 'N/A'}</p>
-                            <p><strong>Uses metrics:</strong> ${sa.usesMetrics ? 'Yes' : 'No'}</p>
-                            <p><strong>Length:</strong> ${sa.avgLength || 'medium'}</p>
-                            <p><strong>Tone:</strong> ${sa.tone || 'professional'}</p>
-                        </div>
-                    `;
-                }
-                
-                // Summary
-                const allKeywords = suggestions.bulletPoints.flatMap(b => b.keywords || []);
-                const uniqueKeywords = [...new Set(allKeywords)];
-                
-                // Show rephrase suggestions first
-                let rephraseHTML = '';
-                if (suggestions.rephraseSuggestions && suggestions.rephraseSuggestions.length > 0) {
-                    rephraseHTML = `
-                        <h4 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #92400e;">Rephrase Existing Content (${suggestions.rephraseSuggestions.length})</h4>
-                        <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 12px;">Update these phrases in your resume to match the JD terminology:</p>
-                        ${suggestions.rephraseSuggestions.map((r, i) => `
-                            <div class="bullet-point-card" style="border-left: 3px solid #f59e0b;">
-                                <div class="bullet-point-text">
-                                    <div style="margin-bottom: 8px;">
-                                        <span style="color: #dc2626; text-decoration: line-through;">${r.currentText || 'Current phrasing'}</span>
-                                    </div>
-                                    <div style="color: #059669; font-weight: 500;">${r.suggestedText}</div>
-                                    <div style="margin-top: 8px;">
-                                        <span style="font-size: 0.75rem; color: #92400e;">Add keyword: ${r.keyword}</span>
-                                    </div>
-                                </div>
-                                <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${(r.suggestedText || '').replace(/`/g, '').replace(/"/g, '&quot;')}\`)">Copy</button>
-                            </div>
-                        `).join('')}
-                        <h4 style="margin: 20px 0 12px; font-size: 0.875rem; font-weight: 600; color: #374151;">New Bullet Points to Add (${suggestions.bulletPoints.length})</h4>
-                    `;
-                }
-                
-                bulletPointsContainer.innerHTML = styleHTML + rephraseHTML + `
-                    <div class="info-box success" style="margin-bottom: 16px;">
-                        <strong>${suggestions.bulletPoints.length} new bullet${suggestions.bulletPoints.length !== 1 ? 's' : ''}</strong> for missing experience.
-                        ${suggestions.keywordsNotCovered?.length > 0 ? `<br><span style="color: #92400e;">Not covered: ${suggestions.keywordsNotCovered.join(', ')}</span>` : ''}
-                    </div>
-                ` + suggestions.bulletPoints.map((bullet, index) => {
-                    const cleanText = bullet.text;
-                    const keywordsUsed = bullet.keywords?.join(', ') || '';
-                    const targetSection = bullet.targetSection || 'Experience';
-                    
-                    return `
-                        <div class="bullet-point-card" id="bullet-${index}">
-                            <div class="bullet-point-text">
-                                ${cleanText}
-                                <div style="margin-top: 8px;">
-                                    ${keywordsUsed ? `<span style="font-size: 0.75rem; color: #059669; font-weight: 500;">Keywords: ${keywordsUsed}</span>` : ''}
-                                    <span class="bullet-target">${targetSection}</span>
-                                </div>
-                            </div>
-                            <button class="copy-btn" onclick="copyBulletPoint(${index}, \`${cleanText.replace(/`/g, '\\`').replace(/"/g, '&quot;')}\`)">
-                                Copy
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            } else if (suggestions && suggestions.rephraseSuggestions && suggestions.rephraseSuggestions.length > 0) {
-                // Only rephrase suggestions, no new bullets needed
-                bulletPointsContainer.innerHTML = `
-                    <h4 style="margin-bottom: 12px; font-size: 0.875rem; font-weight: 600; color: #92400e;">Rephrase Existing Content</h4>
-                    <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 12px;">Update these phrases to match JD terminology:</p>
-                    ${suggestions.rephraseSuggestions.map((r, i) => `
-                        <div class="bullet-point-card" style="border-left: 3px solid #f59e0b;">
-                            <div class="bullet-point-text">
-                                <div style="margin-bottom: 8px;">
-                                    <span style="color: #dc2626; text-decoration: line-through;">${r.currentText || 'Current phrasing'}</span>
-                                </div>
-                                <div style="color: #059669; font-weight: 500;">${r.suggestedText}</div>
-                                <div style="margin-top: 8px;">
-                                    <span style="font-size: 0.75rem; color: #92400e;">Add keyword: ${r.keyword}</span>
-                                </div>
-                            </div>
-                            <button class="copy-btn" onclick="navigator.clipboard.writeText(\`${(r.suggestedText || '').replace(/`/g, '').replace(/"/g, '&quot;')}\`)">Copy</button>
-                        </div>
-                    `).join('')}
-                    <div class="info-box success" style="margin-top: 16px;">
-                        No new bullet points needed - just rephrase existing content!
-                    </div>
-                `;
-            } else {
-                bulletPointsContainer.innerHTML = `
-                    <div class="info-box success">
-                        Your resume already covers the key requirements! No changes needed.
-                    </div>
-                `;
+            let kwHTML = '<h3 style="margin-bottom:12px;font-size:0.875rem;font-weight:600;color:#374151;">Found in resume (' + matchedKw.length + ')</h3>' +
+                '<div class="keywords-grid">' + matchedKw.slice(0, 25).map(kw => '<div class="keyword-tag found">' + kw + '</div>').join('') + '</div>';
+
+            if (needsRephrasing.length > 0) {
+                kwHTML += '<h3 style="margin:20px 0 12px;font-size:0.875rem;font-weight:600;color:#374151;">Needs Rephrasing (' + needsRephrasing.length + ')</h3>' +
+                    '<p style="font-size:0.8rem;color:#6b7280;margin-bottom:8px;">Replace the word in your resume with the exact JD term:</p>' +
+                    '<div class="keywords-grid" style="flex-direction:column;gap:8px;">' +
+                    needsRephrasing.map(item => {
+                        const rt = typeof item === 'object' ? (item.resumeTerm || '') : item;
+                        const jt = typeof item === 'object' ? (item.jdTerm || '') : item;
+                        return '<div class="keyword-tag" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;display:inline-flex;align-items:center;gap:8px;">' +
+                            '<span>Replace <strong>"' + rt + '"</strong> with <strong>"' + jt + '"</strong></span></div>';
+                    }).join('') + '</div>';
             }
-            
-            // Scroll to results
+
+            kwHTML += '<h3 style="margin:20px 0 12px;font-size:0.875rem;font-weight:600;color:#374151;">Missing (' + missingKw.length + ')</h3>' +
+                '<div class="keywords-grid">' +
+                (missingKw.length > 0
+                    ? missingKw.slice(0, 20).map(kw => '<div class="keyword-tag missing">' + kw + '</div>').join('')
+                    : '<span style="color:#059669;">No missing keywords!</span>') +
+                '</div>';
+
+            keywordAnalysis.innerHTML = kwHTML;
+
+            // Bullet points & rephrase suggestions
+            const bulletPointsContainer = document.getElementById('bulletPoints');
+            const hasBullets = suggestions?.bulletPoints?.length > 0;
+            const hasRephrase = suggestions?.rephraseSuggestions?.length > 0;
+
+            let bpHTML = '';
+
+            if (hasRephrase) {
+                bpHTML += '<h4 style="margin-bottom:12px;font-size:0.875rem;font-weight:600;color:#92400e;">Rephrase Existing Content (' + suggestions.rephraseSuggestions.length + ')</h4>' +
+                    '<p style="font-size:0.8rem;color:#6b7280;margin-bottom:12px;">Update these lines in your resume to match JD terminology:</p>' +
+                    suggestions.rephraseSuggestions.map(function(r) {
+                        const safeText = (r.suggestedText || '').replace(/`/g, '').replace(/"/g, '&quot;');
+                        return '<div class="bullet-point-card" style="border-left:3px solid #f59e0b;">' +
+                            '<div class="bullet-point-text">' +
+                            '<div style="margin-bottom:8px;"><span style="color:#dc2626;text-decoration:line-through;">' + (r.currentText || '') + '</span></div>' +
+                            '<div style="color:#059669;font-weight:500;">' + (r.suggestedText || '') + '</div>' +
+                            '<div style="margin-top:8px;"><span style="font-size:0.75rem;color:#92400e;">Replace "' + (r.resumeTerm || '') + '" with "' + (r.jdTerm || '') + '"</span></div>' +
+                            '</div>' +
+                            '<button class="copy-btn" onclick="navigator.clipboard.writeText(\'' + safeText.replace(/'/g, "\\'") + '\')">Copy</button>' +
+                            '</div>';
+                    }).join('');
+            }
+
+            if (hasBullets) {
+                if (hasRephrase) bpHTML += '<h4 style="margin:20px 0 12px;font-size:0.875rem;font-weight:600;color:#374151;">New Bullet Points (' + suggestions.bulletPoints.length + ')</h4>';
+
+                bpHTML += '<div class="info-box success" style="margin-bottom:16px;">' +
+                    '<strong>' + suggestions.bulletPoints.length + ' suggestion' + (suggestions.bulletPoints.length !== 1 ? 's' : '') + '</strong> for missing keywords.</div>';
+
+                bpHTML += suggestions.bulletPoints.map(function(bullet, index) {
+                    const cleanText = bullet.text || '';
+                    const kws = (bullet.keywords || []).join(', ');
+                    const section = bullet.targetSection || 'Experience';
+                    const safeText = cleanText.replace(/`/g, '').replace(/"/g, '&quot;').replace(/'/g, "\\'");
+                    return '<div class="bullet-point-card" id="bullet-' + index + '">' +
+                        '<div class="bullet-point-text">' + cleanText +
+                        '<div style="margin-top:8px;">' +
+                        (kws ? '<span style="font-size:0.75rem;color:#059669;font-weight:500;">Keywords: ' + kws + '</span> ' : '') +
+                        '<span class="bullet-target">' + section + '</span></div></div>' +
+                        '<button class="copy-btn" onclick="copyBulletPoint(' + index + ',\'' + safeText + '\')">Copy</button></div>';
+                }).join('');
+            }
+
+            if (!hasBullets && !hasRephrase) {
+                bpHTML = '<div class="info-box success">Your resume already covers the key requirements! No changes needed.</div>';
+            }
+
+            bulletPointsContainer.innerHTML = bpHTML;
+
             document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function createMetricCard(title, score, details, reason) {
             const scoreClass = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
-            const reasonHTML = reason ? `<div class="metric-tip">${reason}</div>` : '';
-            return `
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <div class="metric-title">${title}</div>
-                        <div class="metric-score ${scoreClass}">${score}%</div>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${score}%"></div>
-                    </div>
-                    <div class="metric-details">${details}</div>
-                    ${reasonHTML}
-                </div>
-            `;
+            return '<div class="metric-card"><div class="metric-header"><div class="metric-title">' + title +
+                '</div><div class="metric-score ' + scoreClass + '">' + score + '%</div></div>' +
+                '<div class="progress-bar"><div class="progress-fill" style="width:' + score + '%"></div></div>' +
+                '<div class="metric-details">' + details + '</div>' +
+                (reason ? '<div class="metric-tip">' + reason + '</div>' : '') + '</div>';
         }
 
         function copyBulletPoint(index, text) {
-            const cleanText = '• ' + text;
-            
-            navigator.clipboard.writeText(cleanText).then(() => {
-                const btn = document.querySelector(`#bullet-${index} .copy-btn`);
+            navigator.clipboard.writeText('• ' + text).then(function() {
+                var btn = document.querySelector('#bullet-' + index + ' .copy-btn');
                 btn.textContent = 'Copied!';
                 btn.classList.add('copied');
-                
-                setTimeout(() => {
-                    btn.textContent = 'Copy';
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                alert('Copy failed. Please select and copy manually.');
-            });
+                setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+            }).catch(function() { alert('Copy failed. Please select and copy manually.'); });
         }
     </script>
 </body>
