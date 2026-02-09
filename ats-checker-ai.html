@@ -491,14 +491,21 @@ Return a JSON object:
 
 RULES:
 1. "extracted" must ONLY contain terms explicitly in the JD text
-2. "matched" = keyword exists in resume (case-insensitive)
-3. "needsRephrasing" = resume has a synonym (e.g. resume: "Docker", JD: "Container technology"). Return {"resumeTerm": "Docker", "jdTerm": "Container technology"}. Do NOT also put it in "missing"
-4. "missing" = keyword from JD with NO similar term in resume at all
-5. knockoutFilters.failed = ONLY for requirements EXPLICITLY stated as required/mandatory in JD. Do NOT fail on things the JD does not mention
-6. recommendations must ONLY reference JD content, never suggest highlighting unrelated resume content
-7. If resume experience >= JD requirement, it passes
-8. Score: keywords 35%, experience 25%, education 20%, title 10%, skills 10%
-9. Return ONLY valid JSON`;
+2. "matched" = the EXACT keyword (or very close variation like plural/singular) appears as a word in the resume. Be STRICT:
+   - "Azure" does NOT match "AWS" (different cloud providers)
+   - "Cosmos DB" does NOT match "MongoDB" (different databases)
+   - "Azure OpenAI" does NOT match "OpenAI" (different platforms)
+   - "LangChain" matches only if "LangChain" appears in resume
+   - "fraud detection" does NOT match just "detection" (needs both words)
+   Only mark as matched if the exact term is explicitly written in the resume
+3. "needsRephrasing" = resume has a SYNONYM for the concept (e.g. resume: "Docker", JD: "containerization"). Return {"resumeTerm": "Docker", "jdTerm": "containerization"}. Do NOT put it in "missing"
+4. "missing" = keyword from JD that is COMPLETELY ABSENT from resume (not even a synonym)
+5. Be conservative: When in doubt, put in "missing" rather than "matched"
+6. knockoutFilters.failed = ONLY for requirements EXPLICITLY stated as required/mandatory in JD
+7. recommendations must ONLY reference JD content
+8. If resume experience >= JD requirement, it passes
+9. Score: keywords 35%, experience 25%, education 20%, title 10%, skills 10%
+10. Return ONLY valid JSON`;
 
             const result = await callGroqAPI(prompt, 3000, 0.1);
             return verifyAnalysis(result, resume, jd);
@@ -511,15 +518,41 @@ RULES:
             const resumeLower = resume.toLowerCase();
             const jdLower = jd.toLowerCase();
 
-            // Helper: check if a phrase appears in text
+            // Helper: check if a phrase appears in text with word boundaries
             function appearsIn(text, phrase) {
                 if (!phrase) return false;
-                const p = phrase.toLowerCase();
-                if (text.includes(p)) return true;
-                // Check plural/singular
-                if (p.endsWith('s') && text.includes(p.slice(0, -1))) return true;
-                if (!p.endsWith('s') && text.includes(p + 's')) return true;
-                if (p.endsWith('es') && text.includes(p.slice(0, -2))) return true;
+                const p = phrase.toLowerCase().trim();
+                
+                // For multi-word phrases, require exact substring match
+                if (p.includes(' ')) {
+                    return text.includes(p);
+                }
+                
+                // For single words, use word boundary matching
+                // Create regex that matches the word with word boundaries
+                // \b matches word boundaries (spaces, punctuation, start/end of string)
+                const exactMatch = new RegExp('\\b' + p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                if (exactMatch.test(text)) return true;
+                
+                // Check plural/singular variations with word boundaries
+                if (p.endsWith('s')) {
+                    const singular = p.slice(0, -1);
+                    const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                    if (singularMatch.test(text)) return true;
+                }
+                
+                if (!p.endsWith('s')) {
+                    const plural = p + 's';
+                    const pluralMatch = new RegExp('\\b' + plural.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                    if (pluralMatch.test(text)) return true;
+                }
+                
+                if (p.endsWith('es')) {
+                    const singular = p.slice(0, -2);
+                    const singularMatch = new RegExp('\\b' + singular.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+                    if (singularMatch.test(text)) return true;
+                }
+                
                 return false;
             }
 
@@ -558,18 +591,32 @@ RULES:
                     .filter(k => isInJD(k))
                     .filter(k => !rephraseJdTerms.has(k.toLowerCase()));
 
-                // Deduplicate matched array
+                // Deduplicate and verify matched array
                 let matched = [...(analysis.keywords.matched || [])];
                 const matchedSet = new Set();
-                matched = matched.filter(m => {
+                const tempMatched = [];
+                const tempMissing = [];
+
+                // Verify each "matched" keyword actually appears in resume
+                for (const m of matched) {
                     const lower = m.toLowerCase();
-                    if (matchedSet.has(lower)) return false;
-                    matchedSet.add(lower);
-                    return true;
-                });
+                    // Skip duplicates
+                    if (matchedSet.has(lower)) continue;
+                    
+                    // Verify it's actually in the resume
+                    if (appearsIn(resumeLower, m)) {
+                        tempMatched.push(m);
+                        matchedSet.add(lower);
+                    } else {
+                        // AI said it's matched, but it's not in resume - move to missing
+                        tempMissing.push(m);
+                    }
+                }
 
-                const verifiedMissing = [];
+                matched = tempMatched;
+                const verifiedMissing = [...tempMissing];
 
+                // Now process the missing list from AI
                 for (const keyword of missing) {
                     if (appearsIn(resumeLower, keyword)) {
                         const keywordLower = keyword.toLowerCase();
@@ -578,7 +625,9 @@ RULES:
                             matchedSet.add(keywordLower);
                         }
                     } else {
-                        verifiedMissing.push(keyword);
+                        if (!verifiedMissing.some(m => m.toLowerCase() === keyword.toLowerCase())) {
+                            verifiedMissing.push(keyword);
+                        }
                     }
                 }
 
@@ -595,19 +644,42 @@ RULES:
                 analysis.keywords.score = total > 0 ? Math.round((matched.length / total) * 100) : 100;
             }
 
-            // Verify skills.missing
+            // Verify skills.matched and skills.missing
             if (analysis.skills) {
                 const skillsMissing = (analysis.skills.missing || []).filter(isInJD);
-                const skillsMatched = [...(analysis.skills.matched || [])];
+                let skillsMatched = [...(analysis.skills.matched || [])];
                 const verifiedSkillsMissing = [];
+                const skillsMatchedSet = new Set();
+                const tempSkillsMatched = [];
 
+                // First, verify each "matched" skill actually appears in resume
+                for (const skill of skillsMatched) {
+                    const lower = skill.toLowerCase();
+                    if (skillsMatchedSet.has(lower)) continue;
+                    
+                    if (appearsIn(resumeLower, skill)) {
+                        tempSkillsMatched.push(skill);
+                        skillsMatchedSet.add(lower);
+                    } else {
+                        // AI said it's matched, but it's not in resume - move to missing
+                        verifiedSkillsMissing.push(skill);
+                    }
+                }
+
+                skillsMatched = tempSkillsMatched;
+
+                // Now process AI's missing list
                 for (const skill of skillsMissing) {
                     if (appearsIn(resumeLower, skill)) {
-                        if (!skillsMatched.some(m => m.toLowerCase() === skill.toLowerCase())) {
+                        const skillLower = skill.toLowerCase();
+                        if (!skillsMatchedSet.has(skillLower)) {
                             skillsMatched.push(skill);
+                            skillsMatchedSet.add(skillLower);
                         }
                     } else {
-                        verifiedSkillsMissing.push(skill);
+                        if (!verifiedSkillsMissing.some(m => m.toLowerCase() === skill.toLowerCase())) {
+                            verifiedSkillsMissing.push(skill);
+                        }
                     }
                 }
 
