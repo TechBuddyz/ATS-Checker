@@ -542,7 +542,9 @@ RULES:
                     })
                     .filter(Boolean)
                     // Verify: jdTerm must be in JD, resumeTerm must be in resume
-                    .filter(r => isInJD(r.jdTerm) && appearsIn(resumeLower, r.resumeTerm));
+                    .filter(r => isInJD(r.jdTerm) && appearsIn(resumeLower, r.resumeTerm))
+                    // Remove identical pairs (resumeTerm === jdTerm)
+                    .filter(r => r.resumeTerm.toLowerCase() !== r.jdTerm.toLowerCase());
 
                 const rephraseJdTerms = new Set(rephrase.map(r => r.jdTerm.toLowerCase()));
 
@@ -556,23 +558,40 @@ RULES:
                     .filter(k => isInJD(k))
                     .filter(k => !rephraseJdTerms.has(k.toLowerCase()));
 
-                const matched = [...(analysis.keywords.matched || [])];
+                // Deduplicate matched array
+                let matched = [...(analysis.keywords.matched || [])];
+                const matchedSet = new Set();
+                matched = matched.filter(m => {
+                    const lower = m.toLowerCase();
+                    if (matchedSet.has(lower)) return false;
+                    matchedSet.add(lower);
+                    return true;
+                });
+
                 const verifiedMissing = [];
 
                 for (const keyword of missing) {
                     if (appearsIn(resumeLower, keyword)) {
-                        if (!matched.some(m => m.toLowerCase() === keyword.toLowerCase())) {
+                        const keywordLower = keyword.toLowerCase();
+                        if (!matchedSet.has(keywordLower)) {
                             matched.push(keyword);
+                            matchedSet.add(keywordLower);
                         }
                     } else {
                         verifiedMissing.push(keyword);
                     }
                 }
 
+                // Filter matched to only include terms in extracted
+                const extractedLower = new Set(analysis.keywords.extracted.map(k => k.toLowerCase()));
+                matched = matched.filter(m => extractedLower.has(m.toLowerCase()));
+
                 analysis.keywords.matched = matched;
                 analysis.keywords.missing = verifiedMissing;
                 analysis.keywords.needsRephrasing = rephrase;
-                const total = matched.length + verifiedMissing.length;
+                
+                // Use extracted.length as the total (not matched + missing)
+                const total = analysis.keywords.extracted.length;
                 analysis.keywords.score = total > 0 ? Math.round((matched.length / total) * 100) : 100;
             }
 
@@ -617,7 +636,8 @@ RULES:
                 ...(analysis.keywords?.missing || []),
                 ...(analysis.skills?.missing || [])
             ];
-            const missing = [...new Set(missingKw)].slice(0, 15);
+            // Remove cap - process all missing keywords (up to 30 for token limits)
+            const missing = [...new Set(missingKw)].slice(0, 30);
 
             const rephrase = (analysis.keywords?.needsRephrasing || [])
                 .filter(r => typeof r === 'object' && r.resumeTerm && r.jdTerm);
@@ -652,11 +672,13 @@ TASKS:
    - currentText: copy the exact line from the resume
    - suggestedText: rewrite that line to include the JD term
 
-2. BULLET POINTS: For each missing keyword, write ONE new bullet point that:
-   - Matches the resume's writing style (action verbs, metrics, tone)
-   - Naturally includes the missing keyword
-   - Draws from the person's existing experience where possible
-   - Sounds like a real achievement
+2. BULLET POINTS: Generate EXACTLY ONE bullet point for EACH of the ${missing.length} missing keywords listed above.
+   You MUST return ${missing.length} bullet points. Each bullet must:
+   - Cover exactly one missing keyword from the list
+   - Match the resume's writing style (action verbs, metrics, tone)
+   - Naturally include the missing keyword in context
+   - Draw from the person's existing experience domain where possible
+   - Sound like a real achievement, not generic
 
 Return JSON:
 {
@@ -670,7 +692,7 @@ Return JSON:
 
 RULES:
 - currentText must be copied from the actual resume text
-- bulletPoints only for MISSING keywords, not rephrase keywords
+- bulletPoints MUST cover ALL missing keywords - generate ${missing.length} bullets
 - Each bullet's keywords must be from the MISSING list only
 - Return ONLY valid JSON`;
 
@@ -711,6 +733,25 @@ RULES:
                     });
             } else {
                 suggestions.bulletPoints = [];
+            }
+
+            // Fallback: Ensure we have at least one bullet per missing keyword
+            if (missingKeywords.length > 0) {
+                const covered = new Set();
+                suggestions.bulletPoints.forEach(b => {
+                    (b.keywords || []).forEach(kw => covered.add(kw.toLowerCase()));
+                });
+
+                missingKeywords.forEach(kw => {
+                    if (!covered.has(kw.toLowerCase())) {
+                        // Generate a simple fallback bullet for uncovered keywords
+                        suggestions.bulletPoints.push({
+                            text: "Applied " + kw + " expertise to deliver measurable improvements in system performance and reliability",
+                            keywords: [kw],
+                            targetSection: "Experience"
+                        });
+                    }
+                });
             }
 
             return suggestions;
